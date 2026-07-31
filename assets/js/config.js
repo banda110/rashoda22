@@ -1,5 +1,5 @@
 const CONFIG = {
-  sitePassword: "love",
+  sitePassword: "1/8/2007",
   dashboardPassword: "love",
   theme: {
     background: "#0a0a0a",
