@@ -1,0 +1,939 @@
+const urlParams = new URLSearchParams(window.location.search);
+const DASHBOARD_ACTIVE = urlParams.has("dash");
+
+if (DASHBOARD_ACTIVE) {
+  document.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("dashboard_auth") === "true") {
+      renderDashboard();
+    } else {
+      renderDashGate();
+    }
+  });
+}
+
+function renderDashGate() {
+  const root = document.getElementById("dashboard-root");
+  if (!root) return;
+  root.innerHTML = `
+    <div class="dash-gate">
+      <div class="glass-card">
+        <h2>${t("dashgate.title")}</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.5rem;">${t("dashgate.subtitle")}</p>
+        <input id="dashPass" type="password" placeholder="${t("dashgate.placeholder")}" />
+        <button id="dashLoginBtn">${t("dashgate.btn")}</button>
+        <p id="dashGateError" class="dash-error"></p>
+      </div>
+    </div>
+  `;
+
+  const btn = document.getElementById("dashLoginBtn");
+  const input = document.getElementById("dashPass");
+  const err = document.getElementById("dashGateError");
+
+  function tryLogin() {
+    if (input.value.trim() === CONFIG.dashboardPassword) {
+      localStorage.setItem("dashboard_auth", "true");
+      renderDashboard();
+    } else {
+      err.textContent = t("dashgate.wrong");
+      err.style.color = "#ff4d6d";
+      err.classList.add("shake");
+      setTimeout(() => err.classList.remove("shake"), 500);
+      input.style.borderColor = "#ff4d6d";
+      input.style.boxShadow = "0 0 20px rgba(255,77,109,0.3)";
+      setTimeout(() => {
+        input.style.borderColor = "";
+        input.style.boxShadow = "";
+      }, 1000);
+    }
+  }
+
+  btn.addEventListener("click", tryLogin);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryLogin(); });
+}
+
+function renderDashboard() {
+  const existing = document.querySelector(".dash-overlay");
+  if (existing) existing.remove();
+
+  const root = document.getElementById("dashboard-root");
+  if (!root) return;
+
+  root.innerHTML = dashboardHTML();
+  bindDashTabs();
+  bindDashEvents();
+  populateDash();
+}
+
+function dashboardHTML() {
+  const tabs = [
+    "general","theme","animations","media","library-2d","library-3d","bundles",
+    "hero","floating","marquee","stack","timeline","explosion","flip","orbit",
+    "statistics","quotes","horizontal","parallax","wall","reveal","ba",
+    "polaroids","carousel","spotlight","bento","split","chapters","vmarquee",
+    "notes","heartbeat","ending"
+  ];
+  const tabLabels = [
+    "General","Theme","Animations","Media Library",
+    "Animation Library","3D Library","Page Bundles",
+    "Hero","Floating Gallery","Marquee","Stack Cards",
+    "Timeline","Explosion","Flip Cards","Orbit Gallery",
+    "Statistics","Quotes","Horizontal Story","Parallax Layers",
+    "Photo Wall","Cinematic Reveal","Before After","Floating Polaroids",
+    "Carousel","Spotlight","Bento Grid","Split Story","Sticky Chapters",
+    "Vertical Marquee","Love Notes","Heartbeat","Final Ending"
+  ];
+  const sections = tabs.slice(7);
+
+  let sectionNav = sections.map(tabKey =>
+    `<button class="dash-nav-item" data-tab="${tabKey}">${window.t("dash.panel." + tabKey)}</button>`
+  ).join("\n");
+
+  return `
+    <div class="dash-overlay">
+      <div class="dash-sidebar">
+        <div class="dash-brand">
+          <div class="dash-brand-icon">&#x2699;</div>
+          <span>Dashboard</span>
+        </div>
+        <div class="dash-search-wrap">
+          <span class="dash-search-icon">&#x2315;</span>
+          <input type="text" id="dashSearch" placeholder='${t("dash.search")}' />
+        </div>
+        <nav class="dash-nav">
+          <div class="dash-nav-group">
+            <span class="dash-nav-label">${t("dash.general")}</span>
+            <button class="dash-nav-item active" data-tab="general">${t("dash.nav.general")}</button>
+            <button class="dash-nav-item" data-tab="theme">${t("dash.nav.theme")}</button>
+            <button class="dash-nav-item" data-tab="animations">${t("dash.nav.animations")}</button>
+          </div>
+          <div class="dash-nav-group">
+            <span class="dash-nav-label">${t("dash.media")}</span>
+            <button class="dash-nav-item" data-tab="media">${t("dash.nav.media")}</button>
+          </div>
+          <div class="dash-nav-group">
+            <span class="dash-nav-label">${t("dash.presets")}</span>
+            <button class="dash-nav-item" data-tab="library-2d">${t("dash.nav.library2d")}</button>
+            <button class="dash-nav-item" data-tab="library-3d">${t("dash.nav.library3d")}</button>
+            <button class="dash-nav-item" data-tab="bundles">${t("dash.nav.bundles")}</button>
+          </div>
+          <div class="dash-nav-group">
+            <span class="dash-nav-label">${t("dash.sections")}</span>
+            ${sectionNav}
+          </div>
+        </nav>
+        <div class="dash-sidebar-footer">
+          <button class="dash-logout-btn" id="dashLogout">${t("dash.logout")}</button>
+        </div>
+      </div>
+      <div class="dash-main">
+        <div class="dash-topbar">
+          <button class="dash-menu-btn" id="dashMenuToggle">&#x2630;</button>
+          <h2 id="dashPanelTitle">${t("dash.general.title")}</h2>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <button class="lang-switch dash-lang-btn" onclick="toggleLang()">${t("lang.switch")}</button>
+            <button class="dash-topbar-close" id="dashClose">&times;</button>
+          </div>
+        </div>
+        <div class="dash-panels-wrap">
+          ${generalPanel()}
+          ${themePanel()}
+          ${animationsPanel()}
+          ${mediaPanel()}
+          ${library2dPanel()}
+          ${library3dPanel()}
+          ${bundlesPanel()}
+          ${heroPanel()}
+          ${floatingPanel()}
+          ${marqueePanel()}
+          ${stackPanel()}
+          ${timelinePanel()}
+          ${explosionPanel()}
+          ${flipPanel()}
+          ${orbitPanel()}
+          ${statisticsPanel()}
+          ${quotesPanel()}
+          ${horizontalPanel()}
+          ${parallaxPanel()}
+          ${wallPanel()}
+          ${revealPanel()}
+          ${baPanel()}
+          ${polaroidsPanel()}
+          ${carouselPanel()}
+          ${spotlightPanel()}
+          ${bentoPanel()}
+          ${splitPanel()}
+          ${chaptersPanel()}
+          ${vmarqueePanel()}
+          ${notesPanel()}
+          ${heartbeatPanel()}
+          ${endingPanel()}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function sectionToggleHTML(sectionId, label) {
+  const s = CONFIG.sections[sectionId];
+  if (!s) return "";
+  return `
+    <div class="section-item">
+      <label>
+        <input type="checkbox" class="sec-toggle" data-section="${sectionId}" ${s.enabled ? "checked" : ""}>
+        ${label}
+      </label>
+    </div>
+  `;
+}
+
+function sectionSettingsHTML(sectionId) {
+  const s = CONFIG.sections[sectionId];
+  if (!s) return "";
+  const bg = s.backgroundColor || "transparent";
+  const accent = s.accentColor || "";
+  return `
+    <label>${t("dash.ssec.title")}</label>
+    <input type="text" class="sec-title" data-section="${sectionId}" value="${escHtml(s.title)}">
+    <label>${t("dash.ssec.subtitle")}</label>
+    <input type="text" class="sec-subtitle" data-section="${sectionId}" value="${escHtml(s.subtitle)}">
+    <label>${t("dash.ssec.desc")}</label>
+    <textarea class="sec-desc" data-section="${sectionId}">${escHtml(s.description)}</textarea>
+    <label>${t("dash.ssec.speed")}</label>
+    <input type="range" min="0.3" max="3" step="0.1" class="sec-speed" data-section="${sectionId}" value="${s.animationSpeed}">
+    <span class="sec-speed-val" data-section="${sectionId}">${s.animationSpeed}x</span>
+    <label>${t("dash.ssec.bg")}</label>
+    <input type="color" class="sec-bg" data-section="${sectionId}" value="${bg}">
+    <label>${t("dash.ssec.accent")}</label>
+    <input type="color" class="sec-accent" data-section="${sectionId}" value="${accent}">
+    <label>${t("dash.ssec.images")}</label>
+    <div class="sec-images" data-section="${sectionId}">
+      ${renderSectionImages(sectionId)}
+    </div>
+    <label style="margin-top:0.5rem;font-size:0.7rem;">${t("dash.ssec.hint")}</label>
+    <div class="media-grid sec-picker" data-section="${sectionId}">
+      ${CONFIG.mediaLibrary.map(m => `
+        <div class="media-item picker-thumb" data-url="${m.url}" data-section="${sectionId}" title="${t("dash.ssec.hint")}">
+          <img src="${m.url}" alt="" loading="lazy">
+        </div>
+      `).join("")}
+    </div>
+    <label style="margin-top:0.5rem;font-size:0.7rem;">${t("dash.ssec.urlHint")}</label>
+    <div style="display:flex;gap:6px;">
+      <input type="url" class="sec-img-url" data-section="${sectionId}" placeholder="${t("dash.ssec.urlPlaceholder")}" style="flex:1;">
+      <button class="dash-btn small sec-img-add" data-section="${sectionId}">${t("dash.ssec.addBtn")}</button>
+    </div>
+  `;
+}
+
+function renderSectionImages(sectionKey) {
+  const s = CONFIG.sections[sectionKey];
+  const images = (s && s.images) || [];
+  if (!images.length) {
+    return `<span style="color:var(--text-muted);font-size:0.75rem;">${t("dash.ssec.noImages")}</span>`;
+  }
+  return `<div class="media-grid sec-media-grid" data-section="${sectionKey}">${images.map(url => `
+    <div class="media-item sec-img-item" data-url="${url}">
+      <img src="${url}" alt="" loading="lazy">
+      <div class="media-del sec-img-del" data-url="${url}" title="${t("dash.ssec.remove")}">&times;</div>
+    </div>
+  `).join("")}</div>`;
+}
+
+function escHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function generalPanel() {
+  return `<div class="dash-panel active" data-panel="general">
+    <h3>${t("dash.general.title")}</h3>
+    <button class="dash-btn primary" id="exportBtn">${t("dash.general.export")}</button>
+    <button class="dash-btn" id="importBtn">${t("dash.general.import")}</button>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <button class="dash-btn danger" id="resetBtn">${t("dash.general.reset")}</button>
+  </div>`;
+}
+
+function themePanel() {
+  return `<div class="dash-panel" data-panel="theme">
+    <h3>${t("dash.theme.title")}</h3>
+    <label>${t("dash.theme.accent")}</label>
+    <input type="color" id="themeAccent" value="${CONFIG.theme.accent}">
+    <label>${t("dash.theme.accent2")}</label>
+    <input type="color" id="themeAccentSecondary" value="${CONFIG.theme.accentSecondary}">
+    <label>${t("dash.theme.bg")}</label>
+    <input type="color" id="themeBg" value="${CONFIG.theme.background}">
+    <label>${t("dash.theme.text")}</label>
+    <input type="color" id="themeText" value="${CONFIG.theme.text}">
+    <label>${t("dash.theme.blur")}</label>
+    <input type="range" min="0" max="50" id="themeBlur" value="${CONFIG.theme.blur}">
+    <label>${t("dash.theme.radius")}</label>
+    <input type="range" min="8" max="50" id="themeRadius" value="${CONFIG.theme.radius}">
+  </div>`;
+}
+
+function animationsPanel() {
+  return `<div class="dash-panel" data-panel="animations">
+    <h3>${t("dash.animations.title")}</h3>
+    <label>${t("dash.anim.speed")}</label>
+    <select id="animSpeed">
+      <option value="slow" ${CONFIG.animation.speed === "slow" ? "selected" : ""}>${t("dash.anim.slow")}</option>
+      <option value="normal" ${CONFIG.animation.speed === "normal" ? "selected" : ""}>${t("dash.anim.normal")}</option>
+      <option value="fast" ${CONFIG.animation.speed === "fast" ? "selected" : ""}>${t("dash.anim.fast")}</option>
+    </select>
+    <label>${t("dash.anim.multiplier")}</label>
+    <input type="range" min="0.2" max="3" step="0.1" id="animMultiplier" value="${CONFIG.animation.multiplier}">
+    <span id="animMultiplierVal">${CONFIG.animation.multiplier}x</span>
+  </div>`;
+}
+
+function mediaPanel() {
+  return `<div class="dash-panel" data-panel="media">
+    <h3>${t("dash.media.title")}</h3>
+    <label>${t("dash.media.url")}</label>
+    <input type="url" id="mediaUrlInput" placeholder="${t("dash.media.urlPlaceholder")}">
+    <label>${t("dash.media.title")}</label>
+    <input type="text" id="mediaTitleInput" placeholder="${t("dash.media.titlePlaceholder")}">
+    <label>${t("dash.media.category")}</label>
+    <input type="text" id="mediaCategoryInput" placeholder="${t("dash.media.catPlaceholder")}">
+    <button class="dash-btn primary" id="addMediaBtn">${t("dash.media.add")}</button>
+    <div id="mediaLibraryList" class="media-grid"></div>
+  </div>`;
+}
+
+function heroPanel() {
+  const h = "hero";
+  return `<div class="dash-panel" data-panel="${h}">
+    <h3>${t("dash.panel.hero")}</h3>
+    ${sectionToggleHTML(h, t("dash.toggle.hero"))}
+    ${sectionSettingsHTML(h)}
+    <label>${t("dash.ssec.btnText")}</label>
+    <input type="text" id="heroBtnText" value="${t("hero.btn")}">
+    <label>${t("dash.ssec.bgUrl")}</label>
+    <input type="url" id="heroBgUrl" placeholder="${t("dash.ssec.bgPlaceholder")}">
+  </div>`;
+}
+
+function floatingPanel() {
+  const k = "floatingMemories";
+  return `<div class="dash-panel" data-panel="floating"><h3>${t("dash.panel.floating")}</h3>${sectionToggleHTML(k, t("dash.toggle.floating"))}${sectionSettingsHTML(k)}</div>`;
+}
+function marqueePanel() {
+  const k = "marquee";
+  return `<div class="dash-panel" data-panel="marquee"><h3>${t("dash.panel.marquee")}</h3>${sectionToggleHTML(k, t("dash.toggle.marquee"))}${sectionSettingsHTML(k)}</div>`;
+}
+function stackPanel() {
+  const k = "stackCards";
+  return `<div class="dash-panel" data-panel="stack"><h3>${t("dash.panel.stack")}</h3>${sectionToggleHTML(k, t("dash.toggle.stack"))}${sectionSettingsHTML(k)}</div>`;
+}
+function timelinePanel() {
+  const k = "timeline";
+  return `<div class="dash-panel" data-panel="timeline"><h3>${t("dash.panel.timeline")}</h3>${sectionToggleHTML(k, t("dash.toggle.timeline"))}${sectionSettingsHTML(k)}</div>`;
+}
+function explosionPanel() {
+  const k = "memoryExplosion";
+  return `<div class="dash-panel" data-panel="explosion"><h3>${t("dash.panel.explosion")}</h3>${sectionToggleHTML(k, t("dash.toggle.explosion"))}${sectionSettingsHTML(k)}</div>`;
+}
+function flipPanel() {
+  const k = "flipCards";
+  return `<div class="dash-panel" data-panel="flip"><h3>${t("dash.panel.flip")}</h3>${sectionToggleHTML(k, t("dash.toggle.flip"))}${sectionSettingsHTML(k)}</div>`;
+}
+function orbitPanel() {
+  const k = "orbitGallery";
+  return `<div class="dash-panel" data-panel="orbit"><h3>${t("dash.panel.orbit")}</h3>${sectionToggleHTML(k, t("dash.toggle.orbit"))}${sectionSettingsHTML(k)}</div>`;
+}
+function statisticsPanel() {
+  const k = "statistics";
+  return `<div class="dash-panel" data-panel="statistics"><h3>${t("dash.panel.statistics")}</h3>${sectionToggleHTML(k, t("dash.toggle.statistics"))}${sectionSettingsHTML(k)}</div>`;
+}
+function quotesPanel() {
+  const k = "loveQuotes";
+  return `<div class="dash-panel" data-panel="quotes"><h3>${t("dash.panel.quotes")}</h3>${sectionToggleHTML(k, t("dash.toggle.quotes"))}${sectionSettingsHTML(k)}</div>`;
+}
+function horizontalPanel() {
+  const k = "horizontalStory";
+  return `<div class="dash-panel" data-panel="horizontal"><h3>${t("dash.panel.horizontal")}</h3>${sectionToggleHTML(k, t("dash.toggle.horizontal"))}${sectionSettingsHTML(k)}</div>`;
+}
+function parallaxPanel() {
+  const k = "parallaxLayers";
+  return `<div class="dash-panel" data-panel="parallax"><h3>${t("dash.panel.parallax")}</h3>${sectionToggleHTML(k, t("dash.toggle.parallax"))}${sectionSettingsHTML(k)}</div>`;
+}
+function wallPanel() {
+  const k = "photoWall";
+  return `<div class="dash-panel" data-panel="wall"><h3>${t("dash.panel.wall")}</h3>${sectionToggleHTML(k, t("dash.toggle.wall"))}${sectionSettingsHTML(k)}</div>`;
+}
+function revealPanel() {
+  const k = "cinematicReveal";
+  return `<div class="dash-panel" data-panel="reveal"><h3>${t("dash.panel.reveal")}</h3>${sectionToggleHTML(k, t("dash.toggle.reveal"))}${sectionSettingsHTML(k)}</div>`;
+}
+function baPanel() {
+  const k = "beforeAfter";
+  return `<div class="dash-panel" data-panel="ba"><h3>${t("dash.panel.ba")}</h3>${sectionToggleHTML(k, t("dash.toggle.ba"))}${sectionSettingsHTML(k)}</div>`;
+}
+function polaroidsPanel() {
+  const k = "floatingPolaroids";
+  return `<div class="dash-panel" data-panel="polaroids"><h3>${t("dash.panel.polaroids")}</h3>${sectionToggleHTML(k, t("dash.toggle.polaroids"))}${sectionSettingsHTML(k)}</div>`;
+}
+function carouselPanel() {
+  const k = "carousel";
+  return `<div class="dash-panel" data-panel="carousel"><h3>${t("dash.panel.carousel")}</h3>${sectionToggleHTML(k, t("dash.toggle.carousel"))}${sectionSettingsHTML(k)}</div>`;
+}
+function spotlightPanel() {
+  const k = "spotlight";
+  return `<div class="dash-panel" data-panel="spotlight"><h3>${t("dash.panel.spotlight")}</h3>${sectionToggleHTML(k, t("dash.toggle.spotlight"))}${sectionSettingsHTML(k)}</div>`;
+}
+function bentoPanel() {
+  const k = "bentoGrid";
+  return `<div class="dash-panel" data-panel="bento"><h3>${t("dash.panel.bento")}</h3>${sectionToggleHTML(k, t("dash.toggle.bento"))}${sectionSettingsHTML(k)}</div>`;
+}
+function splitPanel() {
+  const k = "splitStory";
+  return `<div class="dash-panel" data-panel="split"><h3>${t("dash.panel.split")}</h3>${sectionToggleHTML(k, t("dash.toggle.split"))}${sectionSettingsHTML(k)}</div>`;
+}
+function chaptersPanel() {
+  const k = "stickyChapters";
+  return `<div class="dash-panel" data-panel="chapters"><h3>${t("dash.panel.chapters")}</h3>${sectionToggleHTML(k, t("dash.toggle.chapters"))}${sectionSettingsHTML(k)}</div>`;
+}
+function vmarqueePanel() {
+  const k = "verticalMarquee";
+  return `<div class="dash-panel" data-panel="vmarquee"><h3>${t("dash.panel.vmarquee")}</h3>${sectionToggleHTML(k, t("dash.toggle.vmarquee"))}${sectionSettingsHTML(k)}</div>`;
+}
+function notesPanel() {
+  const k = "loveNotes";
+  return `<div class="dash-panel" data-panel="notes"><h3>${t("dash.panel.notes")}</h3>${sectionToggleHTML(k, t("dash.toggle.notes"))}${sectionSettingsHTML(k)}</div>`;
+}
+function heartbeatPanel() {
+  const k = "heartbeat";
+  return `<div class="dash-panel" data-panel="heartbeat"><h3>${t("dash.panel.heartbeat")}</h3>${sectionToggleHTML(k, t("dash.toggle.heartbeat"))}${sectionSettingsHTML(k)}</div>`;
+}
+function endingPanel() {
+  const k = "finalEnding";
+  return `<div class="dash-panel" data-panel="ending"><h3>${t("dash.panel.ending")}</h3>${sectionToggleHTML(k, t("dash.toggle.ending"))}${sectionSettingsHTML(k)}</div>`;
+}
+
+function sectionOptionHTML() {
+  const shortNames = {
+    hero: "Hero", floatingMemories: "Floating Gallery", marquee: "Marquee",
+    stackCards: "Stack Cards", timeline: "Timeline", memoryExplosion: "Explosion",
+    flipCards: "Flip Cards", loveQuotes: "Love Quotes", statistics: "Statistics",
+    orbitGallery: "Orbit Gallery", horizontalStory: "Horizontal Story",
+    parallaxLayers: "Parallax Layers", photoWall: "Photo Wall",
+    cinematicReveal: "Cinematic Reveal", beforeAfter: "Before & After",
+    floatingPolaroids: "Polaroids", carousel: "Carousel", spotlight: "Spotlight",
+    bentoGrid: "Bento Grid", splitStory: "Split Story",
+    stickyChapters: "Sticky Chapters", verticalMarquee: "Vertical Marquee",
+    loveNotes: "Love Notes", heartbeat: "Heartbeat", finalEnding: "Final Ending"
+  };
+  return Object.entries(CONFIG.sections).filter(([k,v]) => v.enabled)
+    .map(([k,v]) => `<option value="${k}">${shortNames[k] || v.title}</option>`).join("");
+}
+
+/* === ANIMATION LIBRARY (2D) === */
+function library2dPanel() {
+  const presets = CONFIG.animationPresets.filter(p => p.type === "2d");
+  return `<div class="dash-panel" data-panel="library-2d">
+    <h3>2D Animation Library</h3>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.library2d.desc")}</p>
+    <div class="presets-grid">${presets.map(p => `
+      <div class="preset-card" data-preset="${p.id}">
+        <div class="preset-badge ${p.category}">${p.category}</div>
+        <h4>${p.name}</h4>
+        <p>${p.description}</p>
+        <div class="preset-meta">
+          <span>${p.requiresImages > 0 ? p.requiresImages + ' images' : 'No images'}</span>
+          <select class="preset-section-pick" data-preset="${p.id}">
+            <option value="">${t("dash.selectSection")}</option>
+            ${sectionOptionHTML()}
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:0.5rem;">
+          <button class="dash-btn small preset-apply" data-preset="${p.id}">${t("dash.applyBtn")}</button>
+          <button class="dash-btn small preset-preview" data-preset="${p.id}" style="background:rgba(255,255,255,0.06);flex:1;">&#x25B6; Preview</button>
+        </div>
+      </div>
+    `).join("")}</div>
+  </div>`;
+}
+
+/* === 3D ANIMATION LIBRARY === */
+function library3dPanel() {
+  const presets = CONFIG.animationPresets.filter(p => p.type === "3d");
+  return `<div class="dash-panel" data-panel="library-3d">
+    <h3>3D Animation Library</h3>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.library3d.desc")}</p>
+    <div class="presets-grid">${presets.map(p => `
+      <div class="preset-card">
+        <div class="preset-badge three-d">3D</div>
+        <h4>${p.name}</h4>
+        <p>${p.description}</p>
+        <div class="preset-meta">
+          <span>${p.requiresImages > 0 ? p.requiresImages + ' images' : 'No images'}</span>
+          <select class="preset-section-pick" data-preset="${p.id}">
+            <option value="">${t("dash.selectSection")}</option>
+            ${sectionOptionHTML()}
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:0.5rem;">
+          <button class="dash-btn small preset-apply" data-preset="${p.id}">${t("dash.applyBtn")}</button>
+          <button class="dash-btn small preset-preview" data-preset="${p.id}" style="background:rgba(255,255,255,0.06);flex:1;">&#x25B6; Preview</button>
+        </div>
+      </div>
+    `).join("")}</div>
+  </div>`;
+}
+
+/* === PAGE BUNDLES === */
+function bundlesPanel() {
+  return `<div class="dash-panel" data-panel="bundles">
+    <h3>${t("dash.bundles.title")}</h3>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.bundles.desc")}</p>
+    <div class="bundles-grid">${CONFIG.pageBundles.map(b => `
+      <div class="bundle-card">
+        <div class="bundle-header">
+          <span class="bundle-icon">&#x25A8;</span>
+          <h4>${b.name}</h4>
+        </div>
+        <p>${b.description}</p>
+        <div class="bundle-sections">
+          ${b.sections.map(sk => {
+            const sec = CONFIG.sections[sk];
+            const shortNames = {
+              hero: "Hero", floatingMemories: "Floating Gallery", marquee: "Marquee",
+              stackCards: "Stack Cards", timeline: "Timeline", memoryExplosion: "Explosion",
+              flipCards: "Flip Cards", loveQuotes: "Love Quotes", statistics: "Statistics",
+              orbitGallery: "Orbit Gallery", horizontalStory: "Horizontal Story",
+              parallaxLayers: "Parallax Layers", photoWall: "Photo Wall",
+              cinematicReveal: "Cinematic Reveal", beforeAfter: "Before & After",
+              floatingPolaroids: "Polaroids", carousel: "Carousel", spotlight: "Spotlight",
+              bentoGrid: "Bento Grid", splitStory: "Split Story",
+              stickyChapters: "Sticky Chapters", verticalMarquee: "Vertical Marquee",
+              loveNotes: "Love Notes", heartbeat: "Heartbeat", finalEnding: "Final Ending"
+            };
+            return sec ? `<span class="bundle-tag">${shortNames[sk] || sec.title}</span>` : '';
+          }).join("")}
+        </div>
+        <button class="dash-btn primary bundle-install" data-bundle="${b.id}">${t("dash.installBtn")}</button>
+      </div>
+    `).join("")}</div>
+  </div>`;
+}
+
+/* === TAB SYSTEM === */
+const TAB_LABELS = {
+  general: "General", theme: "Theme", animations: "Animations", media: "Media Library",
+  "library-2d": "Animation Library", "library-3d": "3D Library", bundles: "Page Bundles",
+  hero: "Hero", floating: "Floating Gallery", marquee: "Marquee", stack: "Stack Cards",
+  timeline: "Timeline", explosion: "Memory Explosion", flip: "Flip Cards",
+  orbit: "Orbit Gallery", statistics: "Statistics", quotes: "Love Quotes",
+  horizontal: "Horizontal Story", parallax: "Parallax Layers", wall: "Photo Wall",
+  reveal: "Cinematic Reveal", ba: "Before & After", polaroids: "Floating Polaroids",
+  carousel: "Carousel", spotlight: "Spotlight", bento: "Bento Grid",
+  split: "Split Story", chapters: "Sticky Chapters", vmarquee: "Vertical Marquee",
+  notes: "Love Notes", heartbeat: "Heartbeat", ending: "Final Ending"
+};
+
+function bindDashTabs() {
+  const panelTitle = document.getElementById("dashPanelTitle");
+
+  document.querySelectorAll(".dash-nav-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".dash-nav-item").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".dash-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.dataset.tab;
+      const panel = document.querySelector(`[data-panel="${tab}"]`);
+      if (panel) panel.classList.add("active");
+      if (panelTitle) panelTitle.textContent = t("dash.panel." + tab) || TAB_LABELS[tab] || tab;
+      if (tab === "media") renderMediaLibrary();
+    });
+  });
+
+  const searchInput = document.getElementById("dashSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll(".dash-nav-item").forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+      document.querySelectorAll(".dash-nav-group").forEach(group => {
+        const visible = [...group.querySelectorAll(".dash-nav-item")].some(el => el.style.display !== "none");
+        group.style.display = visible ? "" : "none";
+      });
+    });
+  }
+
+  const closeBtn = document.getElementById("dashClose");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      const overlay = document.querySelector(".dash-overlay");
+      if (overlay) overlay.remove();
+    });
+  }
+
+  const menuBtn = document.getElementById("dashMenuToggle");
+  const sidebar = document.querySelector(".dash-sidebar");
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
+    document.querySelectorAll(".dash-nav-item").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (window.innerWidth <= 768) sidebar.classList.remove("open");
+      });
+    });
+  }
+}
+
+/* === POPULATE & BIND === */
+
+function populateDash() {
+  renderMediaLibrary();
+}
+
+function bindDashEvents() {
+  /* General */
+  document.getElementById("exportBtn")?.addEventListener("click", exportConfig);
+  document.getElementById("importBtn")?.addEventListener("click", () => document.getElementById("importFile")?.click());
+  document.getElementById("importFile")?.addEventListener("change", (e) => {
+    if (e.target.files.length) importConfig(e.target.files[0]);
+  });
+  document.getElementById("resetBtn")?.addEventListener("click", resetConfig);
+
+  /* Theme */
+  document.getElementById("themeAccent")?.addEventListener("input", (e) => {
+    CONFIG.theme.accent = e.target.value;
+    document.documentElement.style.setProperty("--accent", e.target.value);
+    saveConfig();
+  });
+  document.getElementById("themeAccentSecondary")?.addEventListener("input", (e) => {
+    CONFIG.theme.accentSecondary = e.target.value;
+    document.documentElement.style.setProperty("--accent-secondary", e.target.value);
+    saveConfig();
+  });
+  document.getElementById("themeBg")?.addEventListener("input", (e) => {
+    CONFIG.theme.background = e.target.value;
+    document.documentElement.style.setProperty("--bg", e.target.value);
+    saveConfig();
+  });
+  document.getElementById("themeText")?.addEventListener("input", (e) => {
+    CONFIG.theme.text = e.target.value;
+    document.documentElement.style.setProperty("--text", e.target.value);
+    saveConfig();
+  });
+  document.getElementById("themeBlur")?.addEventListener("input", (e) => {
+    CONFIG.theme.blur = parseInt(e.target.value);
+    saveConfig();
+  });
+  document.getElementById("themeRadius")?.addEventListener("input", (e) => {
+    CONFIG.theme.radius = parseInt(e.target.value);
+    document.documentElement.style.setProperty("--radius-xl", e.target.value + "px");
+    saveConfig();
+  });
+
+  /* Animations */
+  document.getElementById("animSpeed")?.addEventListener("change", (e) => {
+    CONFIG.animation.speed = e.target.value;
+    saveConfig();
+  });
+  document.getElementById("animMultiplier")?.addEventListener("input", (e) => {
+    CONFIG.animation.multiplier = parseFloat(e.target.value);
+    document.getElementById("animMultiplierVal").textContent = e.target.value + "x";
+    saveConfig();
+  });
+
+  /* Media Library */
+  document.getElementById("addMediaBtn")?.addEventListener("click", addMediaItem);
+
+  /* Section toggles */
+  document.querySelectorAll(".sec-toggle").forEach(cb => {
+    cb.addEventListener("change", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) {
+        section.enabled = e.target.checked;
+        const el = document.getElementById(section.id);
+        if (el) el.style.display = e.target.checked ? "" : "none";
+        saveConfig();
+      }
+    });
+  });
+
+  /* Section bg/accent colors */
+  document.querySelectorAll(".sec-bg").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) {
+        section.backgroundColor = e.target.value;
+        const el = document.getElementById(section.id);
+        if (el && e.target.value && e.target.value !== "#000000" && e.target.value !== "#0a0a0a") {
+          el.style.backgroundColor = e.target.value;
+        }
+        saveConfig();
+      }
+    });
+  });
+  document.querySelectorAll(".sec-accent").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) {
+        section.accentColor = e.target.value;
+        const el = document.getElementById(section.id);
+        if (el && e.target.value) {
+          el.style.setProperty("--section-accent", e.target.value);
+        }
+        saveConfig();
+      }
+    });
+  });
+
+  /* Section settings */
+  document.querySelectorAll(".sec-title").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) { section.title = e.target.value; saveConfig(); }
+    });
+  });
+  document.querySelectorAll(".sec-subtitle").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) { section.subtitle = e.target.value; saveConfig(); }
+    });
+  });
+  document.querySelectorAll(".sec-desc").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) { section.description = e.target.value; saveConfig(); }
+    });
+  });
+  document.querySelectorAll(".sec-speed").forEach(inp => {
+    inp.addEventListener("input", (e) => {
+      const section = CONFIG.sections[e.target.dataset.section];
+      if (section) {
+        section.animationSpeed = parseFloat(e.target.value);
+        const val = document.querySelector(`.sec-speed-val[data-section="${e.target.dataset.section}"]`);
+        if (val) val.textContent = parseFloat(e.target.value).toFixed(1) + "x";
+        saveConfig();
+      }
+    });
+  });
+
+  /* Per-section image picker */
+  document.querySelectorAll(".picker-thumb").forEach(el => {
+    el.addEventListener("click", () => {
+      const sectionKey = el.dataset.section;
+      const url = el.dataset.url;
+      if (!sectionKey || !url) return;
+      const s = CONFIG.sections[sectionKey];
+      if (!s) return;
+      if (!s.images) s.images = [];
+      if (s.images.includes(url)) return;
+      s.images.push(url);
+      saveConfig();
+      const container = document.querySelector(`.sec-images[data-section="${sectionKey}"]`);
+      if (container) container.innerHTML = renderSectionImages(sectionKey);
+    });
+  });
+  document.addEventListener("click", (e) => {
+    const del = e.target.closest(".sec-img-del");
+    if (!del) return;
+    const sectionKey = del.closest("[data-section]")?.dataset.section;
+    const url = del.dataset.url;
+    if (!sectionKey || !url) return;
+    const s = CONFIG.sections[sectionKey];
+    if (s && s.images) {
+      s.images = s.images.filter(u => u !== url);
+      saveConfig();
+      const container = document.querySelector(`.sec-images[data-section="${sectionKey}"]`);
+      if (container) container.innerHTML = renderSectionImages(sectionKey);
+    }
+  });
+  document.querySelectorAll(".sec-img-add").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sectionKey = btn.dataset.section;
+      const input = document.querySelector(`.sec-img-url[data-section="${sectionKey}"]`);
+      if (!input || !input.value.trim() || !sectionKey) return;
+      const s = CONFIG.sections[sectionKey];
+      if (!s) return;
+      if (!s.images) s.images = [];
+      s.images.push(input.value.trim());
+      saveConfig();
+      input.value = "";
+      const container = document.querySelector(`.sec-images[data-section="${sectionKey}"]`);
+      if (container) container.innerHTML = renderSectionImages(sectionKey);
+    });
+  });
+
+  /* Animation Preset Apply (direct) */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".preset-apply");
+    if (!btn) return;
+    const presetId = btn.dataset.preset;
+    const select = document.querySelector(`.preset-section-pick[data-preset="${presetId}"]`);
+    if (!select || !select.value) { alert(t("dash.noSection")); return; }
+    const sectionKey = select.value;
+    applyPresetToSection(presetId, sectionKey);
+  });
+
+  /* Animation Preset Preview */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".preset-preview");
+    if (!btn) return;
+    const presetId = btn.dataset.preset;
+    const select = document.querySelector(`.preset-section-pick[data-preset="${presetId}"]`);
+    if (!select || !select.value) { alert(t("dash.noSection")); return; }
+    const sectionKey = select.value;
+    previewPreset(presetId, sectionKey);
+  });
+
+  /* Page Bundle Install */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".bundle-install");
+    if (!btn) return;
+    const bundleId = btn.dataset.bundle;
+    const bundle = CONFIG.pageBundles.find(b => b.id === bundleId);
+    if (!bundle) return;
+    Object.keys(CONFIG.sections).forEach(k => {
+      CONFIG.sections[k].enabled = bundle.sections.includes(k);
+    });
+    saveConfig();
+    alert(t("dash.bundleInstalled"));
+    location.reload();
+  });
+
+  /* Hero extra */
+  document.getElementById("heroBtnText")?.addEventListener("input", (e) => {
+    CONFIG.heroBtnText = e.target.value;
+    const btn = document.querySelector("#hero .hero-btn");
+    if (btn) btn.textContent = e.target.value;
+    saveConfig();
+  });
+  document.getElementById("heroBgUrl")?.addEventListener("input", (e) => {
+    if (e.target.value) {
+      const bg = document.getElementById("heroBg");
+      if (bg) bg.style.backgroundImage = `url('${e.target.value}')`;
+    }
+  });
+
+  /* Logout */
+  document.getElementById("dashLogout")?.addEventListener("click", () => {
+    localStorage.removeItem("dashboard_auth");
+    document.querySelector(".dash-overlay")?.remove();
+    renderDashGate();
+  });
+}
+
+/* === PRESET FUNCTIONS === */
+function applyPresetToSection(presetId, sectionKey) {
+  const preset = CONFIG.animationPresets.find(p => p.id === presetId);
+  const s = CONFIG.sections[sectionKey];
+  if (!s || !preset) return;
+  s.animationStyle = presetId;
+  if (preset.defaultSettings) Object.assign(s, preset.defaultSettings);
+  saveConfig();
+  alert(t("dash.animApplied"));
+  if (typeof window.refreshSections === "function") window.refreshSections();
+}
+
+let _previewState = null;
+
+function previewPreset(presetId, sectionKey) {
+  const preset = CONFIG.animationPresets.find(p => p.id === presetId);
+  const s = CONFIG.sections[sectionKey];
+  if (!s || !preset) return;
+
+  _previewState = {
+    sectionKey,
+    oldStyle: s.animationStyle,
+    oldSettings: { ...s },
+  };
+
+  s.animationStyle = presetId;
+  if (preset.defaultSettings) Object.assign(s, preset.defaultSettings);
+
+  const dash = document.querySelector(".dash-overlay");
+  const app = document.getElementById("app");
+  if (dash) dash.style.display = "none";
+
+  if (typeof window.refreshSections === "function") window.refreshSections();
+
+  const el = document.getElementById(s.id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  const bar = document.createElement("div");
+  bar.id = "previewBar";
+  bar.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:1rem;padding:0.75rem 1.5rem;background:rgba(10,10,10,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);animation:dashFadeIn 0.3s ease;";
+  bar.innerHTML = `
+    <span style="font-size:0.8rem;color:var(--text-muted);">${preset.name} → ${s.title}</span>
+    <button class="dash-btn primary" id="previewConfirm" style="padding:6px 18px;font-size:0.75rem;">&#x2713; Confirm</button>
+    <button class="dash-btn" id="previewCancel" style="padding:6px 18px;font-size:0.75rem;">&#x2717; Cancel</button>
+  `;
+  document.body.appendChild(bar);
+
+  document.getElementById("previewConfirm").addEventListener("click", () => {
+    saveConfig();
+    bar.remove();
+    if (dash) dash.style.display = "flex";
+    alert(t("dash.animApplied"));
+    _previewState = null;
+  });
+
+  document.getElementById("previewCancel").addEventListener("click", () => {
+    const ps = _previewState;
+    if (ps) {
+      const sec = CONFIG.sections[ps.sectionKey];
+      if (sec) {
+        sec.animationStyle = ps.oldStyle;
+        if (ps.oldSettings) {
+          Object.keys(ps.oldSettings).forEach(k => {
+            if (k !== "id" && k !== "enabled") sec[k] = ps.oldSettings[k];
+          });
+        }
+      }
+    }
+    bar.remove();
+    if (dash) dash.style.display = "flex";
+    if (typeof window.refreshSections === "function") window.refreshSections();
+    _previewState = null;
+  });
+}
+
+/* === MEDIA LIBRARY === */
+
+function addMediaItem() {
+  const url = document.getElementById("mediaUrlInput")?.value.trim();
+  const title = document.getElementById("mediaTitleInput")?.value.trim() || "Image";
+  const category = document.getElementById("mediaCategoryInput")?.value.trim() || "memories";
+  if (!url) return;
+
+  CONFIG.mediaLibrary.push({
+    id: "med_" + Date.now(),
+    title,
+    url,
+    category
+  });
+  saveConfig();
+  renderMediaLibrary();
+  if (typeof window.refreshSections === "function") window.refreshSections();
+  document.getElementById("mediaUrlInput").value = "";
+  document.getElementById("mediaTitleInput").value = "";
+  document.getElementById("mediaCategoryInput").value = "";
+}
+
+function deleteMediaItem(id) {
+  CONFIG.mediaLibrary = CONFIG.mediaLibrary.filter(m => m.id !== id);
+  saveConfig();
+  renderMediaLibrary();
+  if (typeof window.refreshSections === "function") window.refreshSections();
+}
+
+function renderMediaLibrary() {
+  const list = document.getElementById("mediaLibraryList");
+  if (!list) return;
+  list.innerHTML = CONFIG.mediaLibrary.map(m => `
+    <div class="media-item" title="${escHtml(m.title)} (${escHtml(m.category)})">
+      <img src="${m.url}" alt="${escHtml(m.title)}" loading="lazy">
+      <div class="media-del" onclick="deleteMediaItem('${m.id}')">&times;</div>
+    </div>
+  `).join("");
+}

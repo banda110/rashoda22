@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memories — A Cinematic Experience</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+</head>
+<body>
+
+<div id="noise-overlay"></div>
+<div id="grain-overlay"></div>
+<div id="aurora-bg"></div>
+<div id="mouse-glow"></div>
+<div id="cursor-main"></div>
+<div id="cursor-follower"></div>
+<div id="scroll-progress"></div>
+<div id="particles-canvas"></div>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-card-inner">
+      <div class="login-icon">&#x2764;</div>
+      <h1 class="login-title">A Memory Story</h1>
+      <p class="login-subtitle">Enter the password to begin</p>
+      <div class="login-input-wrap">
+        <input id="sitePassword" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="off" />
+        <div class="login-input-glow"></div>
+      </div>
+      <button id="loginBtn" class="login-btn">Unlock Memories</button>
+      <p id="loginError" class="login-error"></p>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+
+<header id="main-header">
+  <div class="header-inner">
+    <a href="#" class="header-logo">&#x2764; Memories</a>
+    <nav class="header-nav">
+      <a href="#floating-memories" data-i18n="header.gallery">Gallery</a>
+      <a href="#timeline" data-i18n="header.story">Story</a>
+      <a href="#love-quotes" data-i18n="header.words">Words</a>
+    </nav>
+    <div class="header-actions">
+      <button class="lang-switch" id="langSwitch" onclick="toggleLang()" data-i18n="lang.switch">العربية</button>
+      <div class="header-hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="hero" class="section" data-section="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-particles" id="heroParticles"></div>
+  <div class="hero-content">
+    <span class="hero-tag" id="heroTag">A Story Worth Remembering</span>
+    <h1 class="hero-title" id="heroTitle">Every Memory<br/>Tells A Story</h1>
+    <p class="hero-desc" id="heroDesc">Some moments stay with us forever.</p>
+    <button class="hero-btn" id="heroBtn">Explore Memories</button>
+  </div>
+  <div class="scroll-indicator">
+    <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+    <span>Scroll to explore</span>
+  </div>
+</section>
+
+<section id="floating-memories" class="section" data-section="floating-memories">
+  <div class="section-heading">
+    <span class="section-label">Memories</span>
+    <h2 class="section-title">Floating Moments</h2>
+    <p class="section-desc">A collection of beautiful memories suspended in time.</p>
+  </div>
+  <div class="floating-container" id="floatingGallery"></div>
+</section>
+
+<section id="marquee" class="section" data-section="marquee">
+  <div class="section-heading">
+    <span class="section-label">Gallery</span>
+    <h2 class="section-title">Infinite Memories</h2>
+    <p class="section-desc">Moments that never end.</p>
+  </div>
+  <div class="marquee-wrap">
+    <div class="marquee-row row-left"><div class="marquee-track" id="marqueeTrack1"></div></div>
+    <div class="marquee-row row-right"><div class="marquee-track" id="marqueeTrack2"></div></div>
+    <div class="marquee-row row-left"><div class="marquee-track" id="marqueeTrack3"></div></div>
+  </div>
+</section>
+
+<section id="stack-cards" class="section" data-section="stack-cards">
+  <div class="section-heading">
+    <span class="section-label">Story</span>
+    <h2 class="section-title">Stacked Memories</h2>
+    <p class="section-desc">Every memory reveals the next chapter.</p>
+  </div>
+  <div class="stack-wrapper" id="stackWrapper">
+    <div class="stack-card"><img src="https://picsum.photos/id/10/800/1000" alt=""><div class="stack-content"><h3>First Memory</h3><p>The beginning of everything.</p></div></div>
+    <div class="stack-card"><img src="https://picsum.photos/id/20/800/1000" alt=""><div class="stack-content"><h3>Second Memory</h3><p>A beautiful day together.</p></div></div>
+    <div class="stack-card"><img src="https://picsum.photos/id/30/800/1000" alt=""><div class="stack-content"><h3>Third Memory</h3><p>Moments worth keeping forever.</p></div></div>
+    <div class="stack-card"><img src="https://picsum.photos/id/40/800/1000" alt=""><div class="stack-content"><h3>Fourth Memory</h3><p>Forever in our hearts.</p></div></div>
+  </div>
+</section>
+
+<section id="timeline" class="section" data-section="timeline">
+  <div class="section-heading">
+    <span class="section-label">Timeline</span>
+    <h2 class="section-title">Journey Through Memories</h2>
+    <p class="section-desc">Every moment has its place in our story.</p>
+  </div>
+  <div class="timeline-container" id="timelineContainer">
+    <div class="timeline-line-bg"></div>
+    <div class="timeline-line-progress" id="timelineProgress"></div>
+    <div class="timeline-item left"><div class="timeline-dot"></div><div class="timeline-content"><img src="https://picsum.photos/id/101/600/400" alt=""><div class="timeline-text"><h3 class="timeline-date">2021</h3><h4>The Beginning</h4><p>Where it all started.</p></div></div></div>
+    <div class="timeline-item right"><div class="timeline-dot"></div><div class="timeline-content"><img src="https://picsum.photos/id/102/600/400" alt=""><div class="timeline-text"><h3 class="timeline-date">2022</h3><h4>Growing Together</h4><p>Every day stronger.</p></div></div></div>
+    <div class="timeline-item left"><div class="timeline-dot"></div><div class="timeline-content"><img src="https://picsum.photos/id/103/600/400" alt=""><div class="timeline-text"><h3 class="timeline-date">2023</h3><h4>Beautiful Moments</h4><p>Laughter and joy.</p></div></div></div>
+    <div class="timeline-item right"><div class="timeline-dot"></div><div class="timeline-content"><img src="https://picsum.photos/id/104/600/400" alt=""><div class="timeline-text"><h3 class="timeline-date">2024</h3><h4>New Adventures</h4><p>Exploring the world.</p></div></div></div>
+    <div class="timeline-item left"><div class="timeline-dot"></div><div class="timeline-content"><img src="https://picsum.photos/id/106/600/400" alt=""><div class="timeline-text"><h3 class="timeline-date">2025</h3><h4>Forever Us</h4><p>A story still being written.</p></div></div></div>
+  </div>
+</section>
+
+<section id="memory-explosion" class="section" data-section="memory-explosion">
+  <div class="section-heading">
+    <span class="section-label">Explosion</span>
+    <h2 class="section-title">Memories Everywhere</h2>
+    <p class="section-desc">Every memory comes alive at once.</p>
+  </div>
+  <div class="explosion-container" id="explosionContainer">
+    <div class="explosion-card"><img src="https://picsum.photos/id/107/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/108/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/169/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/160/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/152/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/180/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/190/400/500" alt=""></div>
+    <div class="explosion-card"><img src="https://picsum.photos/id/191/400/500" alt=""></div>
+  </div>
+</section>
+
+<section id="flip-cards" class="section" data-section="flip-cards">
+  <div class="section-heading">
+    <span class="section-label">Moments</span>
+    <h2 class="section-title">3D Flip Cards</h2>
+    <p class="section-desc">Turn the card to reveal the memory.</p>
+  </div>
+  <div class="flip-grid" id="flipGrid">
+    <div class="flip-card"><div class="flip-inner"><div class="flip-front"><img src="https://picsum.photos/id/200/500/600" alt=""></div><div class="flip-back"><div class="flip-back-content"><h3>Sunset</h3><p class="flip-date">June 2024</p><p>A beautiful evening by the shore.</p></div></div></div></div>
+    <div class="flip-card"><div class="flip-inner"><div class="flip-front"><img src="https://picsum.photos/id/201/500/600" alt=""></div><div class="flip-back"><div class="flip-back-content"><h3>Adventure</h3><p class="flip-date">March 2024</p><p>Exploring new places together.</p></div></div></div></div>
+    <div class="flip-card"><div class="flip-inner"><div class="flip-front"><img src="https://picsum.photos/id/202/500/600" alt=""></div><div class="flip-back"><div class="flip-back-content"><h3>Celebration</h3><p class="flip-date">December 2024</p><p>Joyful moments that matter.</p></div></div></div></div>
+    <div class="flip-card"><div class="flip-inner"><div class="flip-front"><img src="https://picsum.photos/id/203/500/600" alt=""></div><div class="flip-back"><div class="flip-back-content"><h3>Quiet Time</h3><p class="flip-date">January 2025</p><p>Peaceful mornings together.</p></div></div></div></div>
+  </div>
+</section>
+
+<section id="love-quotes" class="section" data-section="love-quotes">
+  <div class="section-heading">
+    <span class="section-label">Words</span>
+    <h2 class="section-title">Love Quotes</h2>
+    <p class="section-desc">Words from the heart.</p>
+  </div>
+  <div class="quotes-container" id="quotesContainer">
+    <blockquote class="quote-card active"><p>"Every moment with you is a beautiful memory."</p><cite>&mdash; Our Story</cite></blockquote>
+    <blockquote class="quote-card"><p>"You are the best thing that ever happened to me."</p><cite>&mdash; Forever</cite></blockquote>
+    <blockquote class="quote-card"><p>"In your eyes, I found my home."</p><cite>&mdash; Endless Love</cite></blockquote>
+    <blockquote class="quote-card"><p>"Together is the most beautiful place to be."</p><cite>&mdash; Us</cite></blockquote>
+  </div>
+</section>
+
+<section id="statistics" class="section" data-section="statistics">
+  <div class="section-heading">
+    <span class="section-label">Numbers</span>
+    <h2 class="section-title">Our Story In Numbers</h2>
+    <p class="section-desc">Every moment counts.</p>
+  </div>
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-number" data-target="365">0</div><span class="stat-label">Days Together</span></div>
+    <div class="stat-card"><div class="stat-number" data-target="52">0</div><span class="stat-label">Adventures</span></div>
+    <div class="stat-card"><div class="stat-number" data-target="1000">0</div><span class="stat-label">Memories</span></div>
+    <div class="stat-card"><div class="stat-number" data-target="∞">0</div><span class="stat-label">Love Forever</span></div>
+  </div>
+</section>
+
+<section id="orbit-gallery" class="section" data-section="orbit-gallery">
+  <div class="section-heading">
+    <span class="section-label">Orbit</span>
+    <h2 class="section-title">Orbit Gallery</h2>
+    <p class="section-desc">Memories orbiting around us.</p>
+  </div>
+  <div class="orbit-container" id="orbitContainer">
+    <div class="orbit-center">&#x2764;</div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:0deg"><img src="https://picsum.photos/id/210/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:45deg"><img src="https://picsum.photos/id/211/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:90deg"><img src="https://picsum.photos/id/212/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:135deg"><img src="https://picsum.photos/id/213/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:180deg"><img src="https://picsum.photos/id/214/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:225deg"><img src="https://picsum.photos/id/215/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:270deg"><img src="https://picsum.photos/id/216/200/200" alt=""></div></div>
+    <div class="orbit-ring"><div class="orbit-item" style="--angle:315deg"><img src="https://picsum.photos/id/217/200/200" alt=""></div></div>
+  </div>
+</section>
+
+<section id="horizontal-story" class="section" data-section="horizontal-story">
+  <div class="section-heading">
+    <span class="section-label">Story</span>
+    <h2 class="section-title">A Horizontal Journey</h2>
+    <p class="section-desc">Scroll sideways through our story.</p>
+  </div>
+  <div class="horizontal-wrap" id="horizontalWrap">
+    <div class="horizontal-track" id="horizontalTrack">
+      <div class="horizontal-panel"><img src="https://picsum.photos/id/220/800/600" alt=""><div class="horizontal-text"><h3>Chapter 1</h3><p>How it all began.</p></div></div>
+      <div class="horizontal-panel"><img src="https://picsum.photos/id/221/800/600" alt=""><div class="horizontal-text"><h3>Chapter 2</h3><p>Growing together.</p></div></div>
+      <div class="horizontal-panel"><img src="https://picsum.photos/id/222/800/600" alt=""><div class="horizontal-text"><h3>Chapter 3</h3><p>Beautiful moments.</p></div></div>
+      <div class="horizontal-panel"><img src="https://picsum.photos/id/223/800/600" alt=""><div class="horizontal-text"><h3>Chapter 4</h3><p>New adventures.</p></div></div>
+      <div class="horizontal-panel"><img src="https://picsum.photos/id/224/800/600" alt=""><div class="horizontal-text"><h3>Chapter 5</h3><p>Forever begins.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="parallax-layers" class="section" data-section="parallax-layers">
+  <div class="section-heading">
+    <span class="section-label">Depth</span>
+    <h2 class="section-title">Parallax Layers</h2>
+    <p class="section-desc">Memories with depth.</p>
+  </div>
+  <div class="parallax-wrap" id="parallaxWrap">
+    <div class="parallax-layer layer-1" data-speed="0.2"><img src="https://picsum.photos/id/230/1920/800" alt=""></div>
+    <div class="parallax-layer layer-2" data-speed="0.4"><img src="https://picsum.photos/id/231/1920/800" alt=""></div>
+    <div class="parallax-layer layer-3" data-speed="0.6"><img src="https://picsum.photos/id/232/1920/800" alt=""></div>
+  </div>
+</section>
+
+<section id="photo-wall" class="section" data-section="photo-wall">
+  <div class="section-heading">
+    <span class="section-label">Wall</span>
+    <h2 class="section-title">Infinite Photo Wall</h2>
+    <p class="section-desc">Every memory on display.</p>
+  </div>
+  <div class="wall-masonry" id="photoWall">
+    <div class="wall-item w-2 h-2"><img src="https://picsum.photos/id/240/600/600" alt=""></div>
+    <div class="wall-item w-1 h-1"><img src="https://picsum.photos/id/241/400/400" alt=""></div>
+    <div class="wall-item w-1 h-2"><img src="https://picsum.photos/id/242/400/600" alt=""></div>
+    <div class="wall-item w-2 h-1"><img src="https://picsum.photos/id/243/600/400" alt=""></div>
+    <div class="wall-item w-1 h-1"><img src="https://picsum.photos/id/244/400/400" alt=""></div>
+    <div class="wall-item w-1 h-1"><img src="https://picsum.photos/id/245/400/400" alt=""></div>
+    <div class="wall-item w-1 h-1"><img src="https://picsum.photos/id/246/400/400" alt=""></div>
+    <div class="wall-item w-1 h-1"><img src="https://picsum.photos/id/247/400/400" alt=""></div>
+  </div>
+</section>
+
+<section id="cinematic-reveal" class="section" data-section="cinematic-reveal">
+  <div class="section-heading">
+    <span class="section-label">Reveal</span>
+    <h2 class="section-title">Cinematic Reveal</h2>
+    <p class="section-desc">A dramatic reveal of our favorite moments.</p>
+  </div>
+  <div class="reveal-container" id="revealContainer">
+    <div class="reveal-image" id="revealImage"><img src="https://picsum.photos/id/250/1600/900" alt=""></div>
+    <div class="reveal-overlay" id="revealOverlay"></div>
+    <div class="reveal-text">
+      <h3>The Most Beautiful Memory</h3>
+      <p>Some moments are worth a thousand words.</p>
+    </div>
+  </div>
+</section>
+
+<section id="before-after" class="section" data-section="before-after">
+  <div class="section-heading">
+    <span class="section-label">Then &amp; Now</span>
+    <h2 class="section-title">Before &amp; After</h2>
+    <p class="section-desc">How our journey has transformed us.</p>
+  </div>
+  <div class="ba-container" id="baContainer">
+    <div class="ba-image-wrap">
+      <div class="ba-image ba-after"><img src="https://picsum.photos/id/260/1000/700" alt="After"></div>
+      <div class="ba-image ba-before" id="baBefore"><img src="https://picsum.photos/id/261/1000/700" alt="Before"></div>
+    </div>
+    <div class="ba-handle" id="baHandle"></div>
+    <input type="range" min="0" max="100" value="50" class="ba-slider" id="baSlider">
+  </div>
+</section>
+
+<section id="floating-polaroids" class="section" data-section="floating-polaroids">
+  <div class="section-heading">
+    <span class="section-label">Polaroids</span>
+    <h2 class="section-title">Floating Polaroids</h2>
+    <p class="section-desc">Polaroid memories floating freely.</p>
+  </div>
+  <div class="polaroid-container" id="polaroidContainer">
+    <div class="polaroid" style="--x:10%;--y:20%;--r:-8deg"><div class="polaroid-img"><img src="https://picsum.photos/id/270/300/300" alt=""></div><div class="polaroid-caption">Summer 2024</div></div>
+    <div class="polaroid" style="--x:55%;--y:10%;--r:12deg"><div class="polaroid-img"><img src="https://picsum.photos/id/271/300/300" alt=""></div><div class="polaroid-caption">Spring Days</div></div>
+    <div class="polaroid" style="--x:30%;--y:50%;--r:-5deg"><div class="polaroid-img"><img src="https://picsum.photos/id/272/300/300" alt=""></div><div class="polaroid-caption">Autumn Walk</div></div>
+    <div class="polaroid" style="--x:65%;--y:55%;--r:15deg"><div class="polaroid-img"><img src="https://picsum.photos/id/273/300/300" alt=""></div><div class="polaroid-caption">Winter Nights</div></div>
+    <div class="polaroid" style="--x:40%;--y:75%;--r:-10deg"><div class="polaroid-img"><img src="https://picsum.photos/id/274/300/300" alt=""></div><div class="polaroid-caption">New Beginnings</div></div>
+  </div>
+</section>
+
+<section id="carousel" class="section" data-section="carousel">
+  <div class="section-heading">
+    <span class="section-label">Carousel</span>
+    <h2 class="section-title">Memory Carousel</h2>
+    <p class="section-desc">Drag through the memories.</p>
+  </div>
+  <div class="carousel-container" id="carouselContainer">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-item"><img src="https://picsum.photos/id/280/600/400" alt=""><div class="carousel-caption"><h3>Adventure</h3></div></div>
+      <div class="carousel-item"><img src="https://picsum.photos/id/281/600/400" alt=""><div class="carousel-caption"><h3>Joy</h3></div></div>
+      <div class="carousel-item"><img src="https://picsum.photos/id/282/600/400" alt=""><div class="carousel-caption"><h3>Love</h3></div></div>
+      <div class="carousel-item"><img src="https://picsum.photos/id/283/600/400" alt=""><div class="carousel-caption"><h3>Peace</h3></div></div>
+      <div class="carousel-item"><img src="https://picsum.photos/id/284/600/400" alt=""><div class="carousel-caption"><h3>Dream</h3></div></div>
+      <div class="carousel-item"><img src="https://picsum.photos/id/285/600/400" alt=""><div class="carousel-caption"><h3>Forever</h3></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="spotlight" class="section" data-section="spotlight">
+  <div class="section-heading">
+    <span class="section-label">Spotlight</span>
+    <h2 class="section-title">Spotlight Gallery</h2>
+    <p class="section-desc">Move your cursor to reveal the light.</p>
+  </div>
+  <div class="spotlight-gallery" id="spotlightGallery">
+    <div class="spotlight-item"><img src="https://picsum.photos/id/290/500/600" alt=""></div>
+    <div class="spotlight-item"><img src="https://picsum.photos/id/291/500/600" alt=""></div>
+    <div class="spotlight-item"><img src="https://picsum.photos/id/292/500/600" alt=""></div>
+    <div class="spotlight-item"><img src="https://picsum.photos/id/293/500/600" alt=""></div>
+    <div class="spotlight-item"><img src="https://picsum.photos/id/294/500/600" alt=""></div>
+    <div class="spotlight-item"><img src="https://picsum.photos/id/295/500/600" alt=""></div>
+  </div>
+</section>
+
+<section id="bento-grid" class="section" data-section="bento-grid">
+  <div class="section-heading">
+    <span class="section-label">Bento</span>
+    <h2 class="section-title">Bento Grid</h2>
+    <p class="section-desc">Beautifully arranged memories.</p>
+  </div>
+  <div class="bento-grid" id="bentoGrid">
+    <div class="bento-item bento-tall"><img src="https://picsum.photos/id/300/500/800" alt=""><div class="bento-overlay"><h3>Elegance</h3></div></div>
+    <div class="bento-item bento-wide"><img src="https://picsum.photos/id/301/800/500" alt=""><div class="bento-overlay"><h3>Serenity</h3></div></div>
+    <div class="bento-item"><img src="https://picsum.photos/id/302/500/500" alt=""><div class="bento-overlay"><h3>Joy</h3></div></div>
+    <div class="bento-item"><img src="https://picsum.photos/id/303/500/500" alt=""><div class="bento-overlay"><h3>Peace</h3></div></div>
+    <div class="bento-item bento-wide"><img src="https://picsum.photos/id/304/800/500" alt=""><div class="bento-overlay"><h3>Wonder</h3></div></div>
+    <div class="bento-item bento-tall"><img src="https://picsum.photos/id/305/500/800" alt=""><div class="bento-overlay"><h3>Magic</h3></div></div>
+  </div>
+</section>
+
+<section id="split-story" class="section" data-section="split-story">
+  <div class="section-heading">
+    <span class="section-label">Narrative</span>
+    <h2 class="section-title">Split Story</h2>
+    <p class="section-desc">Two perspectives, one story.</p>
+  </div>
+  <div class="split-container" id="splitContainer">
+    <div class="split-image"><img src="https://picsum.photos/id/310/1000/800" alt=""></div>
+    <div class="split-text">
+      <h3>Our Journey</h3>
+      <p>From the moment we met, everything changed. The world became brighter, the days became fuller, and every moment became a memory worth keeping.</p>
+      <p>Through laughter and tears, adventures and quiet moments, we built a story that is uniquely ours.</p>
+      <p class="split-signature">— Together, Forever</p>
+    </div>
+  </div>
+</section>
+
+<section id="sticky-chapters" class="section" data-section="sticky-chapters">
+  <div class="section-heading">
+    <span class="section-label">Chapters</span>
+    <h2 class="section-title">Sticky Chapters</h2>
+    <p class="section-desc">A scroll-driven narrative.</p>
+  </div>
+  <div class="chapters-container" id="chaptersContainer">
+    <div class="chapter chapter-1">
+      <div class="chapter-sticky">
+        <div class="chapter-content">
+          <h3>Chapter One: Hello</h3>
+          <p>The day our eyes met for the first time.</p>
+          <span class="chapter-year">2021</span>
+        </div>
+        <div class="chapter-visual"><img src="https://picsum.photos/id/320/800/600" alt=""></div>
+      </div>
+    </div>
+    <div class="chapter chapter-2">
+      <div class="chapter-sticky">
+        <div class="chapter-content">
+          <h3>Chapter Two: Together</h3>
+          <p>Building a life, one day at a time.</p>
+          <span class="chapter-year">2022</span>
+        </div>
+        <div class="chapter-visual"><img src="https://picsum.photos/id/321/800/600" alt=""></div>
+      </div>
+    </div>
+    <div class="chapter chapter-3">
+      <div class="chapter-sticky">
+        <div class="chapter-content">
+          <h3>Chapter Three: Grow</h3>
+          <p>Flourishing in each other's love.</p>
+          <span class="chapter-year">2023</span>
+        </div>
+        <div class="chapter-visual"><img src="https://picsum.photos/id/322/800/600" alt=""></div>
+      </div>
+    </div>
+    <div class="chapter chapter-4">
+      <div class="chapter-sticky">
+        <div class="chapter-content">
+          <h3>Chapter Four: Forever</h3>
+          <p>And so the story continues.</p>
+          <span class="chapter-year">2024+</span>
+        </div>
+        <div class="chapter-visual"><img src="https://picsum.photos/id/323/800/600" alt=""></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="vertical-marquee" class="section" data-section="vertical-marquee">
+  <div class="section-heading">
+    <span class="section-label">Flow</span>
+    <h2 class="section-title">Vertical Flow</h2>
+    <p class="section-desc">Memories flowing endlessly.</p>
+  </div>
+  <div class="vmarquee-wrap" id="vmarqueeWrap">
+    <div class="vmarquee-track down" id="vmarqueeTrack1"></div>
+    <div class="vmarquee-track up" id="vmarqueeTrack2"></div>
+    <div class="vmarquee-track down" id="vmarqueeTrack3"></div>
+  </div>
+</section>
+
+<section id="love-notes" class="section" data-section="love-notes">
+  <div class="section-heading">
+    <span class="section-label">Notes</span>
+    <h2 class="section-title">Floating Love Notes</h2>
+    <p class="section-desc">Little messages of love floating by.</p>
+  </div>
+  <div class="notes-container" id="notesContainer">
+    <div class="note-card" style="--x:5%;--delay:0s"><div class="note-inner"><p>You make my world brighter.</p><span>&#x2764;</span></div></div>
+    <div class="note-card" style="--x:25%;--delay:0.5s"><div class="note-inner"><p>Every day with you is a gift.</p><span>&#x2764;</span></div></div>
+    <div class="note-card" style="--x:45%;--delay:1s"><div class="note-inner"><p>I love you more than words can say.</p><span>&#x2764;</span></div></div>
+    <div class="note-card" style="--x:65%;--delay:1.5s"><div class="note-inner"><p>You are my everything.</p><span>&#x2764;</span></div></div>
+    <div class="note-card" style="--x:85%;--delay:2s"><div class="note-inner"><p>Forever and always.</p><span>&#x2764;</span></div></div>
+  </div>
+</section>
+
+<section id="heartbeat" class="section" data-section="heartbeat">
+  <div class="section-heading">
+    <span class="section-label">Heartbeat</span>
+    <h2 class="section-title">Heartbeat Showcase</h2>
+    <p class="section-desc">The rhythm of our love.</p>
+  </div>
+  <div class="heartbeat-container" id="heartbeatContainer">
+    <div class="heartbeat-visual">
+      <div class="heart-icon" id="heartIcon">&#x2764;</div>
+      <div class="heartbeat-line" id="heartbeatLine">
+        <svg viewBox="0 0 500 100" preserveAspectRatio="none">
+          <path class="heart-path" d="M0,50 L60,50 L80,50 L100,50 L120,10 L140,90 L160,50 L180,50 L200,50 L220,10 L240,90 L260,50 L280,50 L300,50 L320,10 L340,90 L360,50 L380,50 L400,50 L420,10 L440,90 L460,50 L480,50 L500,50" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        </svg>
+      </div>
+    </div>
+    <div class="heartbeat-items">
+      <div class="hbeat-item"><div class="hbeat-num">365</div><span>Heartbeats per moment</span></div>
+      <div class="hbeat-item"><div class="hbeat-num">∞</div><span>Love without end</span></div>
+      <div class="hbeat-item"><div class="hbeat-num">24/7</div><span>Always in my heart</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="final-ending" class="section" data-section="final-ending">
+  <div class="ending-overlay"></div>
+  <div class="ending-content">
+    <div class="ending-icon">&#x2764;</div>
+    <h2 class="ending-title">Every Memory<br/>Is A Piece Of Us</h2>
+    <p class="ending-desc">This is just the beginning of our story.</p>
+    <div class="ending-particles" id="endingParticles"></div>
+  </div>
+  <footer class="ending-footer">
+    <p>Made with love &mdash; A Memory Story &copy; 2025</p>
+  </footer>
+</section>
+
+</main>
+</div>
+
+<div id="image-modal" class="image-modal">
+  <div class="modal-backdrop"></div>
+  <button class="modal-close" aria-label="Close">&times;</button>
+  <div class="modal-content">
+    <img src="" alt="" id="modalImage">
+    <p class="modal-caption" id="modalCaption"></p>
+  </div>
+</div>
+
+<div id="dashboard-root"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/effects.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/animations.js"></script>
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>
