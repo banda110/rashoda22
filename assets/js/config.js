@@ -794,15 +794,25 @@ function loadConfig() {
     emitConfigReady();
   }
 
+  const candidates = [];
   const base = getGithubRawBase();
-  if (base) {
-    fetch(base + "/config.json")
-      .then((res) => (res.ok ? res.json() : null))
-      .then(applyMerged)
-      .catch(() => applyMerged(null));
-  } else {
-    applyMerged(null);
+  if (base) candidates.push(base + "/config.json");
+  if (window.location && window.location.origin) {
+    candidates.push(window.location.origin + "/config.json");
   }
+
+  function tryFetch(i) {
+    if (i >= candidates.length) { applyMerged(null); return; }
+    fetch(candidates[i], { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data === "object") applyMerged(data);
+        else tryFetch(i + 1);
+      })
+      .catch(() => tryFetch(i + 1));
+  }
+
+  tryFetch(0);
 }
 
 function deepMerge(target, source) {
