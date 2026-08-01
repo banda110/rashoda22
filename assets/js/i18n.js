@@ -155,6 +155,8 @@ const translations = {
     "dash.nav.library2d": "△ 2D Animations",
     "dash.nav.library3d": "◆ 3D Animations",
     "dash.nav.bundles": "▨ Page Bundles",
+    "dash.nav.content": "✎ Site Text",
+    "dash.nav.github": "⬆ GitHub",
 
     /* Dashboard panels */
     "dash.general.title": "General Settings",
@@ -164,6 +166,38 @@ const translations = {
     "dash.library2d.title": "2D Animation Library",
     "dash.library3d.title": "3D Animation Library",
     "dash.bundles.title": "Page Bundles",
+    "dash.panel.content": "Site Text (Occasion)",
+    "dash.panel.github": "Upload to GitHub",
+
+    "dash.content.desc": "Edit the site text here for your occasion (birthday, anniversary, etc.). Empty fields keep the default text.",
+    "dash.content.siteTitle": "Login Title",
+    "dash.content.siteSubtitle": "Login Subtitle",
+    "dash.content.loginButton": "Login Button",
+    "dash.content.heroTag": "Hero Tag",
+    "dash.content.heroTitle": "Hero Title",
+    "dash.content.heroDescription": "Hero Description",
+    "dash.content.heroButton": "Hero Button",
+    "dash.content.endingTitle": "Ending Title",
+    "dash.content.endingDescription": "Ending Description",
+    "dash.content.endingFooter": "Ending Footer",
+    "dash.content.backgroundImage": "Background Image URL (used for all images until you add photos)",
+
+    "dash.github.desc": "Upload this whole project to GitHub from your browser.",
+    "dash.github.token": "GitHub Personal Access Token (Settings → Developer settings → Tokens, scope: repo)",
+    "dash.github.tokenPlaceholder": "ghp_xxxxxxxxxxxx",
+    "dash.github.repo": "Repository (username/repo, or a new repo name)",
+    "dash.github.repoPlaceholder": "username/my-memory-site",
+    "dash.github.folder": "Choose the project folder (the whole folder)",
+    "dash.github.upload": "⬆ Upload to GitHub",
+    "dash.github.choose": "Choose folder...",
+    "dash.github.noToken": "Please enter your GitHub token.",
+    "dash.github.noRepo": "Please enter a repository name.",
+    "dash.github.noFiles": "Please choose the project folder first.",
+    "dash.github.authFail": "GitHub auth failed. Check your token.",
+    "dash.github.repoFail": "Could not create/find the repository.",
+    "dash.github.start": "Uploading...",
+    "dash.github.done": "Done! Open: ",
+    "dash.github.err": "Error: ",
 
     "dash.general.export": "Export JSON",
     "dash.general.import": "Import JSON",
@@ -189,6 +223,12 @@ const translations = {
     "dash.media.titlePlaceholder": "Image title",
     "dash.media.catPlaceholder": "memories, travel, nature...",
     "dash.media.add": "+ Add Image",
+    "dash.media.uploadTitle": "Upload from device",
+    "dash.media.uploadHint": "Images are compressed and saved inside the site, then added to the library automatically.",
+    "dash.media.browse": "Choose Images",
+    "dash.media.drop": "or drop images here",
+    "dash.media.uploading": "Processing images...",
+    "dash.media.storageFull": "Storage is full. Try smaller images or delete some from the library.",
 
     "dash.library2d.desc": "Click an animation to apply it to a section. Each preset shows required images.",
     "dash.library3d.desc": "3D animations using CSS 3D transforms and Three.js ready presets.",
@@ -553,6 +593,8 @@ const translations = {
     "dash.nav.library2d": "△ رسوم ثنائية الأبعاد",
     "dash.nav.library3d": "◆ رسوم ثلاثية الأبعاد",
     "dash.nav.bundles": "▨ حزم الصفحات",
+    "dash.nav.content": "✎ نصوص الموقع",
+    "dash.nav.github": "⬆ جيت هاب",
 
     "dash.general.title": "الإعدادات العامة",
     "dash.theme.title": "إدارة المظهر",
@@ -561,6 +603,38 @@ const translations = {
     "dash.library2d.title": "مكتبة الرسوم ثنائية الأبعاد",
     "dash.library3d.title": "مكتبة الرسوم ثلاثية الأبعاد",
     "dash.bundles.title": "حزم الصفحات",
+    "dash.panel.content": "نصوص الموقع (المناسبة)",
+    "dash.panel.github": "الرفع إلى جيت هاب",
+
+    "dash.content.desc": "عدّل نصوص الموقع هنا حسب مناسبتك (عيد ميلاد، ذكرى، ...). الحقول الفارغة تحتفظ بالنص الافتراضي.",
+    "dash.content.siteTitle": "عنوان تسجيل الدخول",
+    "dash.content.siteSubtitle": "العنوان الفرعي لتسجيل الدخول",
+    "dash.content.loginButton": "زر تسجيل الدخول",
+    "dash.content.heroTag": "وسم الواجهة",
+    "dash.content.heroTitle": "عنوان الواجهة",
+    "dash.content.heroDescription": "وصف الواجهة",
+    "dash.content.heroButton": "زر الواجهة",
+    "dash.content.endingTitle": "عنوان النهاية",
+    "dash.content.endingDescription": "وصف النهاية",
+    "dash.content.endingFooter": "نص أسفل النهاية",
+    "dash.content.backgroundImage": "رابط صورة الخلفية (تُستخدم في كل الصور حتى تضيف صوراً)",
+
+    "dash.github.desc": "ارفع المشروع كاملاً إلى جيت هاب من المتصفح.",
+    "dash.github.token": "رمز GitHub الشخصي (Settings ← Developer settings ← Tokens، الصلاحية: repo)",
+    "dash.github.tokenPlaceholder": "ghp_xxxxxxxxxxxx",
+    "dash.github.repo": "المستودع (username/repo أو اسم مستودع جديد)",
+    "dash.github.repoPlaceholder": "username/my-memory-site",
+    "dash.github.folder": "اختر مجلد المشروع (المجلد كاملاً)",
+    "dash.github.upload": "⬆ ارفع إلى جيت هاب",
+    "dash.github.choose": "اختر المجلد...",
+    "dash.github.noToken": "من فضلك أدخل رمز GitHub.",
+    "dash.github.noRepo": "من فضلك أدخل اسم المستودع.",
+    "dash.github.noFiles": "من فضلك اختر مجلد المشروع أولاً.",
+    "dash.github.authFail": "فشل تسجيل الدخول لجيت هاب. تحقق من الرمز.",
+    "dash.github.repoFail": "تعذّر إنشاء/العثور على المستودع.",
+    "dash.github.start": "جارٍ الرفع...",
+    "dash.github.done": "تم! افتح: ",
+    "dash.github.err": "خطأ: ",
 
     "dash.general.export": "تصدير JSON",
     "dash.general.import": "استيراد JSON",
@@ -586,6 +660,12 @@ const translations = {
     "dash.media.titlePlaceholder": "عنوان الصورة",
     "dash.media.catPlaceholder": "ذكريات، سفر، طبيعة...",
     "dash.media.add": "+ إضافة صورة",
+    "dash.media.uploadTitle": "ارفع صورة من جهازك",
+    "dash.media.uploadHint": "الصور بتتضغط وتتحفظ جوه الموقع وبالتالي بتتضاف للمكتبة تلقائياً.",
+    "dash.media.browse": "اختر الصور",
+    "dash.media.drop": "أو اسحب الصور وأسقطها هنا",
+    "dash.media.uploading": "جاري معالجة الصور...",
+    "dash.media.storageFull": "المساحة ممتلئة. جرّب صور أصغر أو امسح صور من المكتبة.",
 
     "dash.library2d.desc": "انقر على حركة لتطبيقها على القسم. كل إعداد مسبق يظهر الصور المطلوبة.",
     "dash.library3d.desc": "رسوم متحركة ثلاثية الأبعاد باستخدام CSS 3D transforms وإعدادات Three.js الجاهزة.",
@@ -813,6 +893,33 @@ function initLang() {
   document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
 }
 
+function applyContentOverrides() {
+  const C = (typeof CONFIG !== "undefined" && CONFIG.content) || {};
+
+  const loginTitle = document.querySelector(".login-title");
+  if (loginTitle) loginTitle.textContent = C.siteTitle || t("login.title");
+  const loginSub = document.querySelector(".login-subtitle");
+  if (loginSub) loginSub.textContent = C.siteSubtitle || t("login.subtitle");
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) loginBtn.textContent = C.loginButton || t("login.btn");
+
+  const heroTag = document.getElementById("heroTag");
+  if (heroTag) heroTag.textContent = C.heroTag || t("hero.tag");
+  const heroTitle = document.getElementById("heroTitle");
+  if (heroTitle) heroTitle.innerHTML = C.heroTitle || t("hero.title");
+  const heroDesc = document.getElementById("heroDesc");
+  if (heroDesc) heroDesc.textContent = C.heroDescription || t("hero.desc");
+  const heroBtn = document.getElementById("heroBtn");
+  if (heroBtn) heroBtn.textContent = C.heroButton || t("hero.btn");
+
+  const endingTitle = document.querySelector(".ending-title");
+  if (endingTitle) endingTitle.innerHTML = C.endingTitle || t("ending.title");
+  const endingDesc = document.querySelector(".ending-desc");
+  if (endingDesc) endingDesc.textContent = C.endingDescription || t("ending.desc");
+  const endingFooter = document.querySelector(".ending-footer p");
+  if (endingFooter) endingFooter.textContent = C.endingFooter || t("ending.footer");
+}
+
 function applyLang() {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.dataset.i18n;
@@ -820,39 +927,19 @@ function applyLang() {
   });
   document.title = t("page.title");
 
-  const loginTitle = document.querySelector(".login-title");
-  if (loginTitle) loginTitle.textContent = t("login.title");
-  const loginSub = document.querySelector(".login-subtitle");
-  if (loginSub) loginSub.textContent = t("login.subtitle");
   const loginInput = document.getElementById("sitePassword");
   if (loginInput) loginInput.placeholder = t("login.placeholder");
-  const loginBtn = document.getElementById("loginBtn");
-  if (loginBtn) loginBtn.textContent = t("login.btn");
 
   const logo = document.querySelector(".header-logo");
   if (logo) logo.textContent = t("header.logo");
 
-  const heroTag = document.getElementById("heroTag");
-  if (heroTag) heroTag.textContent = t("hero.tag");
-  const heroTitle = document.getElementById("heroTitle");
-  if (heroTitle) heroTitle.innerHTML = t("hero.title");
-  const heroDesc = document.getElementById("heroDesc");
-  if (heroDesc) heroDesc.textContent = t("hero.desc");
-  const heroBtn = document.getElementById("heroBtn");
-  if (heroBtn) heroBtn.textContent = t("hero.btn");
   const scrollSpan = document.querySelector(".scroll-indicator span");
   if (scrollSpan) scrollSpan.textContent = t("hero.scroll");
-
-  const endingTitle = document.querySelector(".ending-title");
-  if (endingTitle) endingTitle.innerHTML = t("ending.title");
-  const endingDesc = document.querySelector(".ending-desc");
-  if (endingDesc) endingDesc.textContent = t("ending.desc");
-  const endingFooter = document.querySelector(".ending-footer p");
-  if (endingFooter) endingFooter.textContent = t("ending.footer");
 
   const langBtn = document.getElementById("langSwitch");
   if (langBtn) langBtn.textContent = t("lang.switch");
 
+  applyContentOverrides();
   applySectionLang();
   applyCardLang();
 

@@ -13,6 +13,7 @@ const CONFIG = {
     glassBorder: "rgba(255,255,255,0.08)",
     blur: 20,
     radius: 30,
+    backgroundImage: "",
   },
   effects: {
     particles: true,
@@ -27,68 +28,23 @@ const CONFIG = {
     speed: "normal",
     multiplier: 1,
   },
-  mediaLibrary: [
-    {
-      id: "med_1",
-      title: "Memory 1",
-      url: "https://picsum.photos/id/10/800/1000",
-      category: "memories",
-    },
-    {
-      id: "med_2",
-      title: "Memory 2",
-      url: "https://picsum.photos/id/20/800/1000",
-      category: "memories",
-    },
-    {
-      id: "med_3",
-      title: "Memory 3",
-      url: "https://picsum.photos/id/30/800/1000",
-      category: "memories",
-    },
-    {
-      id: "med_4",
-      title: "Memory 4",
-      url: "https://picsum.photos/id/40/800/1000",
-      category: "travel",
-    },
-    {
-      id: "med_5",
-      title: "Memory 5",
-      url: "https://picsum.photos/id/50/800/1000",
-      category: "travel",
-    },
-    {
-      id: "med_6",
-      title: "Memory 6",
-      url: "https://picsum.photos/id/60/800/1000",
-      category: "nature",
-    },
-    {
-      id: "med_7",
-      title: "Memory 7",
-      url: "https://picsum.photos/id/70/800/1000",
-      category: "nature",
-    },
-    {
-      id: "med_8",
-      title: "Memory 8",
-      url: "https://picsum.photos/id/80/800/1000",
-      category: "people",
-    },
-    {
-      id: "med_9",
-      title: "Memory 9",
-      url: "https://picsum.photos/id/90/800/1000",
-      category: "people",
-    },
-    {
-      id: "med_10",
-      title: "Memory 10",
-      url: "https://picsum.photos/id/100/800/1000",
-      category: "memories",
-    },
-  ],
+  content: {
+    siteTitle: "",
+    siteSubtitle: "",
+    loginButton: "",
+    heroTag: "",
+    heroTitle: "Happy birth<br/>day baby ",
+    heroDescription: "1/8/2007",
+    heroButton: "",
+    endingTitle: "",
+    endingDescription: "",
+    endingFooter: "",
+  },
+  github: {
+    token: "",
+    repo: "",
+  },
+  mediaLibrary: [],
   sections: {
     hero: {
       id: "hero",
@@ -370,22 +326,22 @@ const CONFIG = {
     {
       title: "First Memory",
       description: "The beginning of everything.",
-      image: "https://picsum.photos/id/10/800/1000",
+      image: "",
     },
     {
       title: "Second Memory",
       description: "A beautiful day together.",
-      image: "https://picsum.photos/id/20/800/1000",
+      image: "",
     },
     {
       title: "Third Memory",
       description: "Moments worth keeping forever.",
-      image: "https://picsum.photos/id/30/800/1000",
+      image: "",
     },
     {
       title: "Fourth Memory",
       description: "Forever in our hearts.",
-      image: "https://picsum.photos/id/40/800/1000",
+      image: "",
     },
   ],
   timeline: [
@@ -393,31 +349,31 @@ const CONFIG = {
       date: "2021",
       title: "The Beginning",
       description: "Where it all started.",
-      image: "https://picsum.photos/id/101/600/400",
+      image: "",
     },
     {
       date: "2022",
       title: "Growing Together",
       description: "Every day stronger.",
-      image: "https://picsum.photos/id/102/600/400",
+      image: "",
     },
     {
       date: "2023",
       title: "Beautiful Moments",
       description: "Laughter and joy.",
-      image: "https://picsum.photos/id/103/600/400",
+      image: "",
     },
     {
       date: "2024",
       title: "New Adventures",
       description: "Exploring the world.",
-      image: "https://picsum.photos/id/104/600/400",
+      image: "",
     },
     {
       date: "2025",
       title: "Forever Us",
       description: "A story still being written.",
-      image: "https://picsum.photos/id/106/600/400",
+      image: "",
     },
   ],
   quotes: [
@@ -773,7 +729,14 @@ const CONFIG = {
 };
 
 function saveConfig() {
-  localStorage.setItem("memory_config", JSON.stringify(CONFIG));
+  try {
+    localStorage.setItem("memory_config", JSON.stringify(CONFIG));
+  } catch (e) {
+    console.warn("memory_config: save failed", e);
+    try {
+      alert(typeof t === "function" ? t("dash.media.storageFull") : "Storage is full.");
+    } catch (_) {}
+  }
 }
 
 function loadConfig() {
@@ -857,10 +820,18 @@ function getMediaUrls() {
   return CONFIG.mediaLibrary.map((m) => m.url);
 }
 
+function getBackgroundImage() {
+  return (CONFIG.theme && CONFIG.theme.backgroundImage) || "";
+}
+
 function getSectionImages(sectionKey) {
   const section = CONFIG.sections[sectionKey];
   if (section && section.images && section.images.length) return section.images;
-  return getMediaUrls();
+  const media = getMediaUrls();
+  if (media.length) return media;
+  const bg = getBackgroundImage();
+  if (bg) return [bg];
+  return [];
 }
 
 const SECTIONS_LIST = [

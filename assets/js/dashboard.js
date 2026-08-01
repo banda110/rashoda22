@@ -67,14 +67,14 @@ function renderDashboard() {
 
 function dashboardHTML() {
   const tabs = [
-    "general","theme","animations","media","library-2d","library-3d","bundles",
+    "general","theme","animations","content","github","media","library-2d","library-3d","bundles",
     "hero","floating","marquee","stack","timeline","explosion","flip","orbit",
     "statistics","quotes","horizontal","parallax","wall","reveal","ba",
     "polaroids","carousel","spotlight","bento","split","chapters","vmarquee",
     "notes","heartbeat","ending"
   ];
   const tabLabels = [
-    "General","Theme","Animations","Media Library",
+    "General","Theme","Animations","Site Text","GitHub","Media Library",
     "Animation Library","3D Library","Page Bundles",
     "Hero","Floating Gallery","Marquee","Stack Cards",
     "Timeline","Explosion","Flip Cards","Orbit Gallery",
@@ -83,7 +83,7 @@ function dashboardHTML() {
     "Carousel","Spotlight","Bento Grid","Split Story","Sticky Chapters",
     "Vertical Marquee","Love Notes","Heartbeat","Final Ending"
   ];
-  const sections = tabs.slice(7);
+  const sections = tabs.slice(9);
 
   let sectionNav = sections.map(tabKey =>
     `<button class="dash-nav-item" data-tab="${tabKey}">${window.t("dash.panel." + tabKey)}</button>`
@@ -106,6 +106,8 @@ function dashboardHTML() {
             <button class="dash-nav-item active" data-tab="general">${t("dash.nav.general")}</button>
             <button class="dash-nav-item" data-tab="theme">${t("dash.nav.theme")}</button>
             <button class="dash-nav-item" data-tab="animations">${t("dash.nav.animations")}</button>
+            <button class="dash-nav-item" data-tab="content">${t("dash.nav.content")}</button>
+            <button class="dash-nav-item" data-tab="github">${t("dash.nav.github")}</button>
           </div>
           <div class="dash-nav-group">
             <span class="dash-nav-label">${t("dash.media")}</span>
@@ -139,6 +141,8 @@ function dashboardHTML() {
           ${generalPanel()}
           ${themePanel()}
           ${animationsPanel()}
+          ${contentPanel()}
+          ${githubPanel()}
           ${mediaPanel()}
           ${library2dPanel()}
           ${library3dPanel()}
@@ -213,7 +217,7 @@ function sectionSettingsHTML(sectionId) {
     <label style="margin-top:0.5rem;font-size:0.7rem;">${t("dash.ssec.hint")}</label>
     <div class="media-grid sec-picker" data-section="${sectionId}">
       ${CONFIG.mediaLibrary.map(m => `
-        <div class="media-item picker-thumb" data-url="${m.url}" data-section="${sectionId}" title="${t("dash.ssec.hint")}">
+        <div class="media-item picker-thumb" data-id="${m.id}" data-section="${sectionId}" title="${t("dash.ssec.hint")}">
           <img src="${m.url}" alt="" loading="lazy">
         </div>
       `).join("")}
@@ -230,6 +234,15 @@ function renderSectionImages(sectionKey) {
   const s = CONFIG.sections[sectionKey];
   const images = (s && s.images) || [];
   if (!images.length) {
+    const fallback = getSectionImages(sectionKey);
+    if (fallback.length) {
+      const tiles = fallback.slice(0, 8).map(url => `
+        <div class="media-item" style="cursor:default;">
+          <img src="${url}" alt="" loading="lazy">
+        </div>
+      `).join("");
+      return `<div class="media-grid">${tiles}</div><div style="font-size:0.6rem;color:var(--text-muted);margin-top:4px;">${t("dash.content.backgroundImage")}</div>`;
+    }
     return `<span style="color:var(--text-muted);font-size:0.75rem;">${t("dash.ssec.noImages")}</span>`;
   }
   return `<div class="media-grid sec-media-grid" data-section="${sectionKey}">${images.map(url => `
@@ -289,9 +302,71 @@ function animationsPanel() {
   </div>`;
 }
 
+function contentField(key, labelKey) {
+  const val = (CONFIG.content && CONFIG.content[key]) || "";
+  return `
+    <label>${t(labelKey)}</label>
+    <input type="text" class="content-field" data-field="${key}" value="${escHtml(val)}">
+  `;
+}
+
+function contentPanel() {
+  const C = CONFIG.content || {};
+  return `<div class="dash-panel" data-panel="content">
+    <h3>${t("dash.panel.content")}</h3>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.content.desc")}</p>
+    <label>${t("dash.content.backgroundImage")}</label>
+    <input type="url" class="content-field" data-field="backgroundImage" value="${escHtml(CONFIG.theme.backgroundImage || "")}" placeholder="https://...">
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <span style="font-size:0.75rem;color:var(--text-muted);">${t("dash.theme.bg")}:</span>
+      <img id="bgImgPreview" src="${escHtml(CONFIG.theme.backgroundImage || "")}" style="width:70px;height:50px;object-fit:cover;border-radius:8px;border:1px solid var(--glass-border);${CONFIG.theme.backgroundImage ? "" : "display:none;"}" onerror="this.style.display='none'">
+    </div>
+    ${contentField("siteTitle", "dash.content.siteTitle")}
+    ${contentField("siteSubtitle", "dash.content.siteSubtitle")}
+    ${contentField("loginButton", "dash.content.loginButton")}
+    ${contentField("heroTag", "dash.content.heroTag")}
+    ${contentField("heroTitle", "dash.content.heroTitle")}
+    ${contentField("heroDescription", "dash.content.heroDescription")}
+    ${contentField("heroButton", "dash.content.heroButton")}
+    ${contentField("endingTitle", "dash.content.endingTitle")}
+    ${contentField("endingDescription", "dash.content.endingDescription")}
+    ${contentField("endingFooter", "dash.content.endingFooter")}
+  </div>`;
+}
+
+function githubPanel() {
+  const G = CONFIG.github || {};
+  return `<div class="dash-panel" data-panel="github">
+    <h3>${t("dash.panel.github")}</h3>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.github.desc")}</p>
+    <label>${t("dash.github.token")}</label>
+    <input type="password" id="ghToken" value="${escHtml(G.token || "")}" placeholder="${t("dash.github.tokenPlaceholder")}" autocomplete="off">
+    <label>${t("dash.github.repo")}</label>
+    <input type="text" id="ghRepo" value="${escHtml(G.repo || "")}" placeholder="${t("dash.github.repoPlaceholder")}">
+    <label>${t("dash.github.folder")}</label>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input type="file" id="ghFolder" webkitdirectory directory style="display:none">
+      <button class="dash-btn" id="ghFolderBtn">📁 ${t("dash.github.choose")}</button>
+      <span id="ghFolderName" style="font-size:0.75rem;color:var(--text-muted);"></span>
+    </div>
+    <button class="dash-btn primary" id="ghUploadBtn" style="margin-top:0.5rem;">${t("dash.github.upload")}</button>
+    <div id="ghProgress" class="gh-progress" style="display:none;">
+      <div class="gh-progress-bar"><div id="ghProgressFill" class="gh-progress-fill" style="width:0%"></div></div>
+      <div id="ghLog" class="gh-log"></div>
+    </div>
+  </div>`;
+}
+
 function mediaPanel() {
   return `<div class="dash-panel" data-panel="media">
     <h3>${t("dash.media.title")}</h3>
+    <div class="media-upload" id="mediaDrop">
+      <input type="file" id="mediaFileInput" accept="image/*" multiple style="display:none;">
+      <button class="dash-btn" id="mediaFileBtn">${t("dash.media.browse")}</button>
+      <div class="media-drop-hint">${t("dash.media.drop")}</div>
+      <div id="mediaUploadInfo" class="media-upload-info"></div>
+    </div>
+    <div class="media-upload-hint">${t("dash.media.uploadHint")}</div>
     <label>${t("dash.media.url")}</label>
     <input type="url" id="mediaUrlInput" placeholder="${t("dash.media.urlPlaceholder")}">
     <label>${t("dash.media.title")}</label>
@@ -522,7 +597,8 @@ function bundlesPanel() {
 
 /* === TAB SYSTEM === */
 const TAB_LABELS = {
-  general: "General", theme: "Theme", animations: "Animations", media: "Media Library",
+  general: "General", theme: "Theme", animations: "Animations", content: "Site Text", github: "GitHub",
+  media: "Media Library",
   "library-2d": "Animation Library", "library-3d": "3D Library", bundles: "Page Bundles",
   hero: "Hero", floating: "Floating Gallery", marquee: "Marquee", stack: "Stack Cards",
   timeline: "Timeline", explosion: "Memory Explosion", flip: "Flip Cards",
@@ -643,8 +719,77 @@ function bindDashEvents() {
     saveConfig();
   });
 
+  /* Content (site text + background image) */
+  function applyContentChanges() {
+    if (typeof applyContentOverrides === "function") applyContentOverrides();
+    if (typeof applyTheme === "function") applyTheme();
+    if (typeof applyFallbackImages === "function") applyFallbackImages();
+    if (typeof window.refreshSections === "function") window.refreshSections();
+  }
+
+  document.querySelectorAll(".content-field").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const key = inp.dataset.field;
+      if (key === "backgroundImage") {
+        CONFIG.theme.backgroundImage = inp.value.trim();
+        const prev = document.getElementById("bgImgPreview");
+        if (prev) {
+          if (inp.value.trim()) { prev.src = inp.value.trim(); prev.style.display = ""; }
+          else prev.style.display = "none";
+        }
+      } else {
+        if (!CONFIG.content) CONFIG.content = {};
+        CONFIG.content[key] = inp.value;
+      }
+      saveConfig();
+      applyContentChanges();
+    });
+  });
+
+  /* GitHub upload */
+  document.getElementById("ghToken")?.addEventListener("input", (e) => {
+    if (!CONFIG.github) CONFIG.github = {};
+    CONFIG.github.token = e.target.value;
+    saveConfig();
+  });
+  document.getElementById("ghRepo")?.addEventListener("input", (e) => {
+    if (!CONFIG.github) CONFIG.github = {};
+    CONFIG.github.repo = e.target.value;
+    saveConfig();
+  });
+  document.getElementById("ghFolderBtn")?.addEventListener("click", () => {
+    document.getElementById("ghFolder")?.click();
+  });
+  document.getElementById("ghFolder")?.addEventListener("change", (e) => {
+    const name = document.getElementById("ghFolderName");
+    if (name) name.textContent = e.target.files.length ? e.target.files.length + " files selected" : "";
+  });
+  document.getElementById("ghUploadBtn")?.addEventListener("click", uploadToGithub);
+
   /* Media Library */
   document.getElementById("addMediaBtn")?.addEventListener("click", addMediaItem);
+
+  /* Media upload from device */
+  document.getElementById("mediaFileBtn")?.addEventListener("click", () => {
+    document.getElementById("mediaFileInput")?.click();
+  });
+  document.getElementById("mediaFileInput")?.addEventListener("change", (e) => {
+    handleMediaFiles(Array.from(e.target.files || []));
+    e.target.value = "";
+  });
+  const mediaDrop = document.getElementById("mediaDrop");
+  if (mediaDrop) {
+    mediaDrop.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      mediaDrop.classList.add("dragover");
+    });
+    mediaDrop.addEventListener("dragleave", () => mediaDrop.classList.remove("dragover"));
+    mediaDrop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      mediaDrop.classList.remove("dragover");
+      handleMediaFiles(Array.from(e.dataTransfer?.files || []));
+    });
+  }
 
   /* Section toggles */
   document.querySelectorAll(".sec-toggle").forEach(cb => {
@@ -722,7 +867,8 @@ function bindDashEvents() {
   document.querySelectorAll(".picker-thumb").forEach(el => {
     el.addEventListener("click", () => {
       const sectionKey = el.dataset.section;
-      const url = el.dataset.url;
+      const item = CONFIG.mediaLibrary.find(m => m.id === el.dataset.id);
+      const url = item ? item.url : "";
       if (!sectionKey || !url) return;
       const s = CONFIG.sections[sectionKey];
       if (!s) return;
@@ -920,6 +1066,70 @@ function addMediaItem() {
   document.getElementById("mediaCategoryInput").value = "";
 }
 
+async function handleMediaFiles(files) {
+  const info = document.getElementById("mediaUploadInfo");
+  if (!files || !files.length) return;
+  if (info) info.textContent = t("dash.media.uploading");
+  let added = 0;
+  for (const file of files) {
+    if (!file.type || !file.type.startsWith("image/")) continue;
+    const dataUrl = await resizeImage(file);
+    if (!dataUrl) continue;
+    CONFIG.mediaLibrary.push({
+      id: "med_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+      title: (file.name || "Image").replace(/\.[^.]+$/, "") || "Image",
+      url: dataUrl,
+      category: "memories"
+    });
+    added++;
+  }
+  if (added) {
+    saveConfig();
+    renderMediaLibrary();
+    if (typeof window.refreshSections === "function") window.refreshSections();
+  }
+  if (info) {
+    info.textContent = added ? "+" + added + " ✓" : "";
+    setTimeout(() => { if (info) info.textContent = ""; }, 2500);
+  }
+}
+
+function resizeImage(file, maxDim, quality) {
+  maxDim = maxDim || 1200;
+  quality = quality || 0.8;
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        if (!w || !h) return resolve(null);
+        if (w > maxDim || h > maxDim) {
+          const s = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * s);
+          h = Math.round(h * s);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+        try {
+          resolve(canvas.toDataURL(mime, quality));
+        } catch (err) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
 function deleteMediaItem(id) {
   CONFIG.mediaLibrary = CONFIG.mediaLibrary.filter(m => m.id !== id);
   saveConfig();
@@ -936,4 +1146,122 @@ function renderMediaLibrary() {
       <div class="media-del" onclick="deleteMediaItem('${m.id}')">&times;</div>
     </div>
   `).join("");
+}
+
+/* === GITHUB UPLOAD === */
+function ghLog(msg) {
+  const log = document.getElementById("ghLog");
+  if (log) {
+    const line = document.createElement("div");
+    line.textContent = msg;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+function ghSetProgress(pct) {
+  const fill = document.getElementById("ghProgressFill");
+  if (fill) fill.style.width = pct + "%";
+}
+
+async function uploadToGithub() {
+  const token = document.getElementById("ghToken")?.value.trim();
+  let repoInput = document.getElementById("ghRepo")?.value.trim();
+  const files = document.getElementById("ghFolder")?.files || [];
+
+  if (!token) { alert(t("dash.github.noToken")); return; }
+  if (!repoInput) { alert(t("dash.github.noRepo")); return; }
+  if (!files.length) { alert(t("dash.github.noFiles")); return; }
+
+  if (repoInput.includes("github.com/")) {
+    repoInput = repoInput.split("github.com/")[1];
+  }
+  repoInput = repoInput.replace(/\/+$/, "");
+
+  let owner, repo;
+  if (repoInput.includes("/")) {
+    const parts = repoInput.split("/");
+    owner = parts[0];
+    repo = parts[1];
+  } else {
+    repo = repoInput;
+  }
+
+  const wrap = document.getElementById("ghProgress");
+  if (wrap) wrap.style.display = "block";
+  ghSetProgress(0);
+  ghLog(t("dash.github.start"));
+  document.getElementById("ghUploadBtn").disabled = true;
+
+  const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
+
+  try {
+    if (!owner) {
+      const userRes = await fetch("https://api.github.com/user", { headers });
+      if (!userRes.ok) throw new Error(t("dash.github.authFail"));
+      const user = await userRes.json();
+      owner = user.login;
+    }
+
+    const repoRes = await fetch("https://api.github.com/repos/" + owner + "/" + repo, { headers });
+    if (repoRes.status === 404) {
+      const createRes = await fetch("https://api.github.com/user/repos", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ name: repo, private: true })
+      });
+      if (!createRes.ok) throw new Error(t("dash.github.repoFail"));
+    } else if (!repoRes.ok) {
+      throw new Error(t("dash.github.repoFail"));
+    }
+
+    const skipDirs = /(^|\/)(\.git|node_modules|\.next|dist|build)\//;
+    const uploadable = [];
+    for (let i = 0; i < files.length; i++) {
+      const rel = files[i].webkitRelativePath || files[i].name;
+      const path = rel.replace(/^[^/]+\//, "");
+      if (!path || skipDirs.test(rel)) continue;
+      uploadable.push({ file: files[i], path });
+    }
+
+    for (let i = 0; i < uploadable.length; i++) {
+      const { file, path } = uploadable[i];
+      const buf = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      const chunk = 0x8000;
+      for (let c = 0; c < bytes.length; c += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(c, c + chunk));
+      }
+      const content = btoa(binary);
+
+      const putRes = await fetch(
+        "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + path,
+        {
+          method: "PUT",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "Upload via dashboard", content })
+        }
+      );
+      if (!putRes.ok) {
+        const errBody = await putRes.text().catch(() => "");
+        throw new Error(path + " — " + putRes.status + " " + errBody.slice(0, 120));
+      }
+      ghSetProgress(Math.round(((i + 1) / uploadable.length) * 100));
+      ghLog(path);
+    }
+
+    if (owner && repo) {
+      if (!CONFIG.github) CONFIG.github = {};
+      CONFIG.github.repo = owner + "/" + repo;
+      saveConfig();
+    }
+    ghLog(t("dash.github.done") + " https://github.com/" + owner + "/" + repo);
+    alert(t("dash.github.done") + " https://github.com/" + owner + "/" + repo);
+  } catch (err) {
+    ghLog(t("dash.github.err") + err.message);
+    alert(t("dash.github.err") + err.message);
+  } finally {
+    document.getElementById("ghUploadBtn").disabled = false;
+  }
 }

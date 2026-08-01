@@ -927,6 +927,23 @@ html[dir="rtl"] .section-desc { direction: rtl; }
 }
 .media-item:hover .media-del { display: flex; }
 
+.media-upload {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 1rem; margin-top: 0.75rem;
+  border: 1.5px dashed var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  transition: var(--transition);
+}
+.media-upload.dragover {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.05);
+  transform: scale(1.01);
+}
+.media-drop-hint { font-size: 0.72rem; color: var(--text-muted); }
+.media-upload-info { font-size: 0.75rem; color: var(--accent); min-height: 1em; }
+.media-upload-hint { font-size: 0.68rem; color: var(--text-muted); margin: 0.5rem 0; line-height: 1.4; }
+
 .section-item {
   padding: 0.7rem 1rem;
   border-radius: var(--radius-sm);
@@ -955,6 +972,37 @@ html[dir="rtl"] .section-desc { direction: rtl; }
   font-size: 0.8rem; color: var(--accent);
   font-weight: 600;
 }
+
+/* GitHub upload progress */
+.gh-progress {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+.gh-progress-bar {
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.gh-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+  transition: width 0.2s ease;
+}
+.gh-log {
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 0.72rem;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.gh-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-log div:first-child { color: var(--accent); }
 
 /* Section image picker */
 .sec-picker { margin-bottom: 0.5rem; }

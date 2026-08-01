@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   applyTheme();
   applySectionVisibility();
   applyLang();
+  applyFallbackImages();
   initLogin();
   initHamburger();
   initHeaderScroll();
@@ -34,6 +35,42 @@ function applyTheme() {
   root.style.setProperty("--glass", t.glassBg);
   root.style.setProperty("--glass-border", t.glassBorder);
   root.style.setProperty("--radius-xl", t.radius + "px");
+  const bgUrl = getBackgroundImage();
+  if (bgUrl) {
+    document.body.style.backgroundImage = `linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.85)), url('${bgUrl}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+  } else {
+    document.body.style.backgroundImage = "";
+  }
+}
+
+function applyFallbackImages() {
+  document.querySelectorAll("img[data-ph]").forEach(img => {
+    const section = img.closest("section[data-section]");
+    const key = section ? section.dataset.section : "";
+    const s = CONFIG.sections[key];
+    let src = "";
+    const idx = section ? Array.prototype.indexOf.call(section.querySelectorAll("img[data-ph]"), img) : 0;
+    if (s && s.images && s.images.length) {
+      src = s.images[idx % s.images.length];
+    } else {
+      const media = getMediaUrls();
+      if (media.length) {
+        src = media[idx % media.length];
+      } else {
+        src = getBackgroundImage();
+      }
+    }
+    if (src) {
+      img.src = src;
+      img.style.opacity = "";
+      img.style.visibility = "";
+    } else {
+      img.style.visibility = "hidden";
+    }
+  });
 }
 
 function applySectionVisibility() {
@@ -145,16 +182,7 @@ function initHeaderScroll() {
 function buildMarqueeTracks() {
   const trackIds = ["marqueeTrack1", "marqueeTrack2", "marqueeTrack3"];
   const urls = getSectionImages("marquee");
-  if (!urls.length) {
-    urls.push(
-      "https://picsum.photos/id/10/400/300",
-      "https://picsum.photos/id/20/400/300",
-      "https://picsum.photos/id/30/400/300",
-      "https://picsum.photos/id/40/400/300",
-      "https://picsum.photos/id/50/400/300",
-      "https://picsum.photos/id/60/400/300"
-    );
-  }
+  if (!urls.length) return;
 
   trackIds.forEach(id => {
     const track = document.getElementById(id);
@@ -171,16 +199,7 @@ function buildMarqueeTracks() {
 function buildVerticalMarquee() {
   const trackIds = ["vmarqueeTrack1", "vmarqueeTrack2", "vmarqueeTrack3"];
   const urls = getSectionImages("verticalMarquee");
-  if (!urls.length) {
-    urls.push(
-      "https://picsum.photos/id/100/300/300",
-      "https://picsum.photos/id/101/300/300",
-      "https://picsum.photos/id/102/300/300",
-      "https://picsum.photos/id/103/300/300",
-      "https://picsum.photos/id/104/300/300",
-      "https://picsum.photos/id/106/300/300"
-    );
-  }
+  if (!urls.length) return;
 
   trackIds.forEach(id => {
     const track = document.getElementById(id);
@@ -200,9 +219,7 @@ function buildFloatingGallery() {
   container.innerHTML = "";
 
   const urls = getSectionImages("floatingMemories");
-  if (!urls.length) {
-    urls.push("https://picsum.photos/id/10/400/500","https://picsum.photos/id/20/400/500","https://picsum.photos/id/30/400/500","https://picsum.photos/id/40/400/500","https://picsum.photos/id/50/400/500","https://picsum.photos/id/60/400/500");
-  }
+  if (!urls.length) return;
 
   urls.forEach((url, i) => {
     const card = document.createElement("div");
@@ -258,6 +275,7 @@ window.refreshSections = function() {
   buildMarqueeTracks();
   buildVerticalMarquee();
   buildFloatingGallery();
+  applyFallbackImages();
   if (typeof initAllAnimations === 'function') {
     initAllAnimations();
   }
