@@ -11,8 +11,8 @@
     "textMuted": "rgba(255,255,255,0.6)",
     "glassBg": "rgba(255,255,255,0.05)",
     "glassBorder": "rgba(255,255,255,0.08)",
-    "blur": 20,
-    "radius": 30,
+    "blur": 10,
+    "radius": 25,
     "backgroundImage": ""
   },
   "effects": {
@@ -25,15 +25,15 @@
     "scrollProgress": true
   },
   "animation": {
-    "speed": "normal",
-    "multiplier": 1
+    "speed": "fast",
+    "multiplier": 1.4
   },
   "content": {
     "siteTitle": "",
     "siteSubtitle": "",
     "loginButton": "",
     "heroTag": "",
-    "heroTitle": "Happy birth<br/>day baby ",
+    "heroTitle": "Happy birth day baby ",
     "heroDescription": "1/8/2007",
     "heroButton": "",
     "endingTitle": "",
@@ -45,87 +45,87 @@
   },
   "mediaLibrary": [
     {
-      "id": "med_1785617582606_47",
+      "id": "med_1785615628650_633",
       "title": "WhatsApp Image 2026-08-01 at 6.44.31 PM",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618982668_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624915130_0.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582645_446",
+      "id": "med_1785615628735_727",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (5)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618986496_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624917498_1.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582678_501",
+      "id": "med_1785615628841_701",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (4)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618988716_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624919290_2.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582721_855",
+      "id": "med_1785615628915_182",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (3)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618991210_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624921555_3.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582757_944",
+      "id": "med_1785615629001_674",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (2)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618993090_1.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624923302_4.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582793_849",
+      "id": "med_1785615629063_946",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (1)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618996187_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624925308_5.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617582854_650",
+      "id": "med_1785615629181_216",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785618997049_2.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624926995_6.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617590969_994",
+      "id": "med_1785615656154_42",
       "title": "WhatsApp Image 2026-08-01 at 6.44.31 PM",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619000068_1.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624928986_7.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591016_47",
+      "id": "med_1785615656226_427",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (5)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619003091_2.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624930842_8.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591060_532",
+      "id": "med_1785615656293_414",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (4)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619004090_2.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624932838_9.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591104_961",
+      "id": "med_1785615656377_664",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (3)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619010993_1.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624934784_10.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591142_416",
+      "id": "med_1785615656471_669",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (2)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619014045_0.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624936557_11.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591181_517",
+      "id": "med_1785615656542_444",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM (1)",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619016457_2.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624938296_12.jpg",
       "category": "memories"
     },
     {
-      "id": "med_1785617591230_766",
+      "id": "med_1785615656646_585",
       "title": "WhatsApp Image 2026-08-01 at 6.44.30 PM",
-      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785619019595_5.jpg",
+      "url": "https://raw.githubusercontent.com/banda110/rashoda22/HEAD/assets/uploads/img_1785624940000_13.jpg",
       "category": "memories"
     }
   ],
