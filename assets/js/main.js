@@ -284,6 +284,18 @@ window.refreshSections = function() {
   }
 };
 
+/* === APPLY ONLINE (published) CONFIG === */
+document.addEventListener("memory:config-ready", () => {
+  if (typeof applyTheme === "function") applyTheme();
+  if (typeof applySectionVisibility === "function") applySectionVisibility();
+  if (typeof applyContentOverrides === "function") applyContentOverrides();
+  if (typeof applyLang === "function") applyLang();
+  if (typeof applyFallbackImages === "function") applyFallbackImages();
+  if (typeof buildMarqueeTracks === "function") buildMarqueeTracks();
+  if (typeof buildVerticalMarquee === "function") buildVerticalMarquee();
+  if (typeof buildFloatingGallery === "function") buildFloatingGallery();
+});
+
 /* === FULLSCREEN ENTER/EXIT === */
 document.addEventListener("dblclick", (e) => {
   if (e.target.closest("#hero") || e.target.closest("#final-ending")) {

@@ -198,6 +198,11 @@ const translations = {
     "dash.github.start": "Uploading...",
     "dash.github.done": "Done! Open: ",
     "dash.github.err": "Error: ",
+    "dash.github.publish": "Publish site data (config.json)",
+    "dash.github.publishHint": "Uploads the site settings to GitHub so every visitor sees the same content and photos. Press after any change.",
+    "dash.github.published": "Site data published! Everyone will now see your updates.",
+    "dash.github.publishErr": "Publish failed: ",
+    "dash.github.publicHint": "Important: the repository must be PUBLIC so photos and data are visible to everyone.",
 
     "dash.general.export": "Export JSON",
     "dash.general.import": "Import JSON",
@@ -229,6 +234,9 @@ const translations = {
     "dash.media.drop": "or drop images here",
     "dash.media.uploading": "Processing images...",
     "dash.media.storageFull": "Storage is full. Try smaller images or delete some from the library.",
+    "dash.media.ghOnline": "GitHub is connected — new photos are uploaded online automatically and visible to everyone.",
+    "dash.media.ghOnlineShort": "online",
+    "dash.media.ghNotSet": "GitHub is not set up yet — photos stay on this browser only. Go to the GitHub tab to make them visible online.",
 
     "dash.library2d.desc": "Click an animation to apply it to a section. Each preset shows required images.",
     "dash.library3d.desc": "3D animations using CSS 3D transforms and Three.js ready presets.",
@@ -635,6 +643,11 @@ const translations = {
     "dash.github.start": "جارٍ الرفع...",
     "dash.github.done": "تم! افتح: ",
     "dash.github.err": "خطأ: ",
+    "dash.github.publish": "انشر بيانات الموقع (config.json)",
+    "dash.github.publishHint": "بيرفع إعدادات الموقع لجيت هاب عشان كل زائر يشوف نفس المحتوى والصور. اضغط بعد أي تعديل.",
+    "dash.github.published": "تم نشر بيانات الموقع! الكل هيشوف التحديثات دلوقتي.",
+    "dash.github.publishErr": "فشل النشر: ",
+    "dash.github.publicHint": "مهم: المستودع لازم يكون عام (Public) عشان الصور والبيانات تتشاف من الكل.",
 
     "dash.general.export": "تصدير JSON",
     "dash.general.import": "استيراد JSON",
@@ -666,6 +679,9 @@ const translations = {
     "dash.media.drop": "أو اسحب الصور وأسقطها هنا",
     "dash.media.uploading": "جاري معالجة الصور...",
     "dash.media.storageFull": "المساحة ممتلئة. جرّب صور أصغر أو امسح صور من المكتبة.",
+    "dash.media.ghOnline": "جيت هاب متصل — الصور الجديدة بتترفع اونلاين تلقائياً وتتشاف من الكل.",
+    "dash.media.ghOnlineShort": "اونلاين",
+    "dash.media.ghNotSet": "لسه مفيش جيت هاب — الصور هتفضل على المتصفح ده بس. روح لسكشن جيت هاب عشان تظهر اونلاين.",
 
     "dash.library2d.desc": "انقر على حركة لتطبيقها على القسم. كل إعداد مسبق يظهر الصور المطلوبة.",
     "dash.library3d.desc": "رسوم متحركة ثلاثية الأبعاد باستخدام CSS 3D transforms وإعدادات Three.js الجاهزة.",

@@ -739,17 +739,69 @@ function saveConfig() {
   }
 }
 
+function getGithubRawBase() {
+  if (typeof window !== "undefined" && window.location) {
+    const host = window.location.hostname;
+    const io = host.indexOf("github.io");
+    if (io !== -1) {
+      const owner = host.slice(0, io);
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const repo = parts[0] || (owner + ".github.io");
+      return "https://raw.githubusercontent.com/" + owner + "/" + repo + "/HEAD";
+    }
+  }
+  const repo = (CONFIG.github && CONFIG.github.repo) || "";
+  if (repo) {
+    let r = repo.includes("github.com/") ? repo.split("github.com/")[1] : repo;
+    r = r.replace(/\/+$/, "");
+    if (r.includes("/")) {
+      const parts = r.split("/");
+      return "https://raw.githubusercontent.com/" + parts[0] + "/" + parts[1] + "/HEAD";
+    }
+  }
+  return "";
+}
+
+function emitConfigReady() {
+  const fire = () => document.dispatchEvent(new CustomEvent("memory:config-ready"));
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fire);
+  } else {
+    fire();
+  }
+}
+
 function loadConfig() {
+  let local = null;
   try {
     const saved = localStorage.getItem("memory_config");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const origPassword = CONFIG.dashboardPassword;
-      deepMerge(CONFIG, parsed);
-      CONFIG.dashboardPassword = origPassword;
-    }
+    if (saved) local = JSON.parse(saved);
   } catch (e) {
     console.warn("Config load error:", e);
+  }
+
+  const origPassword = CONFIG.dashboardPassword;
+
+  function applyMerged(online) {
+    if (online && typeof online === "object") deepMerge(CONFIG, online);
+    if (local && typeof local === "object") deepMerge(CONFIG, local);
+    CONFIG.dashboardPassword = origPassword;
+    if (CONFIG.github) {
+      const localToken = local && local.github ? local.github.token : "";
+      if (localToken) CONFIG.github.token = localToken;
+      else delete CONFIG.github.token;
+    }
+    emitConfigReady();
+  }
+
+  const base = getGithubRawBase();
+  if (base) {
+    fetch(base + "/config.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(applyMerged)
+      .catch(() => applyMerged(null));
+  } else {
+    applyMerged(null);
   }
 }
 

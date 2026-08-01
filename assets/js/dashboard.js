@@ -336,6 +336,7 @@ function contentPanel() {
 
 function githubPanel() {
   const G = CONFIG.github || {};
+  const ghReady = !!(G.token && G.repo);
   return `<div class="dash-panel" data-panel="github">
     <h3>${t("dash.panel.github")}</h3>
     <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem;">${t("dash.github.desc")}</p>
@@ -343,6 +344,11 @@ function githubPanel() {
     <input type="password" id="ghToken" value="${escHtml(G.token || "")}" placeholder="${t("dash.github.tokenPlaceholder")}" autocomplete="off">
     <label>${t("dash.github.repo")}</label>
     <input type="text" id="ghRepo" value="${escHtml(G.repo || "")}" placeholder="${t("dash.github.repoPlaceholder")}">
+    <div class="media-upload-hint" id="ghStatus" style="color:var(--accent);">${ghReady ? t("dash.media.ghOnline") : t("dash.media.ghNotSet")}</div>
+    <div class="media-upload-hint">${t("dash.github.publicHint")}</div>
+    <button class="dash-btn primary" id="ghPublishBtn" style="margin-top:0.5rem;width:100%;">${t("dash.github.publish")}</button>
+    <div class="media-upload-hint" style="margin-top:0.5rem;">${t("dash.github.publishHint")}</div>
+    <div style="border-top:1px solid var(--glass-border);margin:1.2rem 0;"></div>
     <label>${t("dash.github.folder")}</label>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <input type="file" id="ghFolder" webkitdirectory directory style="display:none">
@@ -367,6 +373,7 @@ function mediaPanel() {
       <div id="mediaUploadInfo" class="media-upload-info"></div>
     </div>
     <div class="media-upload-hint">${t("dash.media.uploadHint")}</div>
+    <div id="mediaGhStatus" class="media-upload-hint" style="margin:0.75rem 0;color:var(--accent);"></div>
     <label>${t("dash.media.url")}</label>
     <input type="url" id="mediaUrlInput" placeholder="${t("dash.media.urlPlaceholder")}">
     <label>${t("dash.media.title")}</label>
@@ -756,6 +763,7 @@ function bindDashEvents() {
     if (!CONFIG.github) CONFIG.github = {};
     CONFIG.github.repo = e.target.value;
     saveConfig();
+    updateMediaGhStatus();
   });
   document.getElementById("ghFolderBtn")?.addEventListener("click", () => {
     document.getElementById("ghFolder")?.click();
@@ -765,6 +773,7 @@ function bindDashEvents() {
     if (name) name.textContent = e.target.files.length ? e.target.files.length + " files selected" : "";
   });
   document.getElementById("ghUploadBtn")?.addEventListener("click", uploadToGithub);
+  document.getElementById("ghPublishBtn")?.addEventListener("click", publishConfigToGithub);
 
   /* Media Library */
   document.getElementById("addMediaBtn")?.addEventListener("click", addMediaItem);
@@ -1070,15 +1079,24 @@ async function handleMediaFiles(files) {
   const info = document.getElementById("mediaUploadInfo");
   if (!files || !files.length) return;
   if (info) info.textContent = t("dash.media.uploading");
+  const ghReady = !!(CONFIG.github && CONFIG.github.token && CONFIG.github.repo);
   let added = 0;
+  let online = 0;
   for (const file of files) {
     if (!file.type || !file.type.startsWith("image/")) continue;
     const dataUrl = await resizeImage(file);
     if (!dataUrl) continue;
+    let url = dataUrl;
+    if (ghReady) {
+      const ext = file.type === "image/png" ? "png" : "jpg";
+      const filename = "img_" + Date.now() + "_" + Math.floor(Math.random() * 1000) + "." + ext;
+      const pushed = await pushImageToGithub(dataUrl, filename);
+      if (pushed) { url = pushed; online++; }
+    }
     CONFIG.mediaLibrary.push({
       id: "med_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
       title: (file.name || "Image").replace(/\.[^.]+$/, "") || "Image",
-      url: dataUrl,
+      url: url,
       category: "memories"
     });
     added++;
@@ -1089,7 +1107,9 @@ async function handleMediaFiles(files) {
     if (typeof window.refreshSections === "function") window.refreshSections();
   }
   if (info) {
-    info.textContent = added ? "+" + added + " ✓" : "";
+    info.textContent = added
+      ? "+" + added + " ✓" + (online ? " (" + t("dash.media.ghOnlineShort") + ")" : "")
+      : "";
     setTimeout(() => { if (info) info.textContent = ""; }, 2500);
   }
 }
@@ -1139,13 +1159,15 @@ function deleteMediaItem(id) {
 
 function renderMediaLibrary() {
   const list = document.getElementById("mediaLibraryList");
-  if (!list) return;
-  list.innerHTML = CONFIG.mediaLibrary.map(m => `
-    <div class="media-item" title="${escHtml(m.title)} (${escHtml(m.category)})">
-      <img src="${m.url}" alt="${escHtml(m.title)}" loading="lazy">
-      <div class="media-del" onclick="deleteMediaItem('${m.id}')">&times;</div>
-    </div>
-  `).join("");
+  if (list) {
+    list.innerHTML = CONFIG.mediaLibrary.map(m => `
+      <div class="media-item" title="${escHtml(m.title)} (${escHtml(m.category)})">
+        <img src="${m.url}" alt="${escHtml(m.title)}" loading="lazy">
+        <div class="media-del" onclick="deleteMediaItem('${m.id}')">&times;</div>
+      </div>
+    `).join("");
+  }
+  updateMediaGhStatus();
 }
 
 /* === GITHUB UPLOAD === */
@@ -1164,6 +1186,169 @@ function ghSetProgress(pct) {
   if (fill) fill.style.width = pct + "%";
 }
 
+function parseGhRepo(repoInput) {
+  if (!repoInput) return { owner: "", repo: "" };
+  let r = repoInput.includes("github.com/") ? repoInput.split("github.com/")[1] : repoInput;
+  r = r.replace(/\/+$/, "").trim();
+  if (r.includes("/")) {
+    const parts = r.split("/");
+    return { owner: parts[0], repo: parts[1] };
+  }
+  return { owner: "", repo: r };
+}
+
+function updateMediaGhStatus() {
+  const el = document.getElementById("mediaGhStatus");
+  if (el) {
+    const ok = !!(CONFIG.github && CONFIG.github.token && CONFIG.github.repo);
+    el.textContent = ok ? t("dash.media.ghOnline") : t("dash.media.ghNotSet");
+  }
+}
+
+async function pushImageToGithub(dataUrl, filename) {
+  try {
+    const token = CONFIG.github.token;
+    const parsed = parseGhRepo(CONFIG.github.repo);
+    if (!token || !parsed.repo) return "";
+    let owner = parsed.owner;
+    const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
+
+    if (!owner) {
+      const userRes = await fetch("https://api.github.com/user", { headers });
+      if (!userRes.ok) return "";
+      owner = (await userRes.json()).login;
+    }
+
+    const repoRes = await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo, { headers });
+    if (repoRes.status === 404) {
+      const createRes = await fetch("https://api.github.com/user/repos", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ name: parsed.repo, private: false })
+      });
+      if (!createRes.ok) return "";
+    } else if (repoRes.ok) {
+      await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo, {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ private: false })
+      }).catch(() => {});
+    } else {
+      return "";
+    }
+
+    const path = "assets/uploads/" + filename;
+    const base64 = dataUrl.split(",")[1];
+    if (!base64) return "";
+    const putRes = await fetch(
+      "https://api.github.com/repos/" + owner + "/" + parsed.repo + "/contents/" + path,
+      {
+        method: "PUT",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "Upload image " + filename, content: base64 })
+      }
+    );
+    if (!putRes.ok) return "";
+
+    if (!CONFIG.github) CONFIG.github = {};
+    if (CONFIG.github.repo.indexOf(owner) !== 0) {
+      CONFIG.github.repo = owner + "/" + parsed.repo;
+    }
+    saveConfig();
+    return "https://raw.githubusercontent.com/" + owner + "/" + parsed.repo + "/HEAD/" + path;
+  } catch (e) {
+    return "";
+  }
+}
+
+async function publishConfigToGithub() {
+  const token = document.getElementById("ghToken")?.value.trim();
+  const repoInput = document.getElementById("ghRepo")?.value.trim();
+  if (!token) { alert(t("dash.github.noToken")); return; }
+  if (!repoInput) { alert(t("dash.github.noRepo")); return; }
+
+  const parsed = parseGhRepo(repoInput);
+  const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
+
+  try {
+    if (!CONFIG.github) CONFIG.github = {};
+    CONFIG.github.token = token;
+    CONFIG.github.repo = parsed.repo;
+
+    let owner = parsed.owner;
+    if (!owner) {
+      const userRes = await fetch("https://api.github.com/user", { headers });
+      if (!userRes.ok) throw new Error(t("dash.github.authFail"));
+      owner = (await userRes.json()).login;
+    }
+    CONFIG.github.repo = owner + "/" + parsed.repo;
+
+    let migrated = 0;
+    for (const m of CONFIG.mediaLibrary) {
+      if (m.url && m.url.indexOf("data:") === 0) {
+        const isPng = m.url.indexOf("data:image/png") === 0;
+        const ext = isPng ? "png" : "jpg";
+        const filename = "img_" + Date.now() + "_" + migrated + "." + ext;
+        const pushed = await pushImageToGithub(m.url, filename);
+        if (pushed) { m.url = pushed; migrated++; }
+      }
+    }
+    if (migrated) saveConfig();
+
+    const repoRes = await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo, { headers });
+    if (repoRes.status === 404) {
+      const createRes = await fetch("https://api.github.com/user/repos", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ name: parsed.repo, private: false })
+      });
+      if (!createRes.ok) throw new Error(t("dash.github.repoFail"));
+    } else if (repoRes.ok) {
+      await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo, {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ private: false })
+      }).catch(() => {});
+    } else {
+      throw new Error(t("dash.github.repoFail"));
+    }
+
+    const data = JSON.parse(JSON.stringify(CONFIG));
+    if (data.github) delete data.github.token;
+    const json = JSON.stringify(data, null, 2);
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    const content = btoa(binary);
+
+    let sha = "";
+    const getRes = await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo + "/contents/config.json", { headers });
+    if (getRes.ok) {
+      const meta = await getRes.json();
+      if (meta.sha) sha = meta.sha;
+    }
+    const body = { message: "Publish site data", content };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch("https://api.github.com/repos/" + owner + "/" + parsed.repo + "/contents/config.json", {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!putRes.ok) throw new Error(t("dash.github.publishErr") + putRes.status);
+
+    if (!CONFIG.github) CONFIG.github = {};
+    CONFIG.github.repo = owner + "/" + parsed.repo;
+    saveConfig();
+    alert(t("dash.github.published"));
+  } catch (err) {
+    alert(t("dash.github.publishErr") + err.message);
+  }
+}
+
 async function uploadToGithub() {
   const token = document.getElementById("ghToken")?.value.trim();
   let repoInput = document.getElementById("ghRepo")?.value.trim();
@@ -1173,19 +1358,9 @@ async function uploadToGithub() {
   if (!repoInput) { alert(t("dash.github.noRepo")); return; }
   if (!files.length) { alert(t("dash.github.noFiles")); return; }
 
-  if (repoInput.includes("github.com/")) {
-    repoInput = repoInput.split("github.com/")[1];
-  }
-  repoInput = repoInput.replace(/\/+$/, "");
-
-  let owner, repo;
-  if (repoInput.includes("/")) {
-    const parts = repoInput.split("/");
-    owner = parts[0];
-    repo = parts[1];
-  } else {
-    repo = repoInput;
-  }
+  const parsed = parseGhRepo(repoInput);
+  let owner = parsed.owner;
+  const repo = parsed.repo;
 
   const wrap = document.getElementById("ghProgress");
   if (wrap) wrap.style.display = "block";
@@ -1208,11 +1383,17 @@ async function uploadToGithub() {
       const createRes = await fetch("https://api.github.com/user/repos", {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ name: repo, private: true })
+        body: JSON.stringify({ name: repo, private: false })
       });
       if (!createRes.ok) throw new Error(t("dash.github.repoFail"));
     } else if (!repoRes.ok) {
       throw new Error(t("dash.github.repoFail"));
+    } else {
+      await fetch("https://api.github.com/repos/" + owner + "/" + repo, {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ private: false })
+      }).catch(() => {});
     }
 
     const skipDirs = /(^|\/)(\.git|node_modules|\.next|dist|build)\//;
@@ -1256,8 +1437,28 @@ async function uploadToGithub() {
       CONFIG.github.repo = owner + "/" + repo;
       saveConfig();
     }
-    ghLog(t("dash.github.done") + " https://github.com/" + owner + "/" + repo);
-    alert(t("dash.github.done") + " https://github.com/" + owner + "/" + repo);
+
+    let siteUrl = "https://github.com/" + owner + "/" + repo;
+    try {
+      const infoRes = await fetch("https://api.github.com/repos/" + owner + "/" + repo, { headers });
+      if (infoRes.ok) {
+        const info = await infoRes.json();
+        const branch = info.default_branch || "main";
+        const pageRes = await fetch("https://api.github.com/repos/" + owner + "/" + repo + "/pages", {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({ source: { branch, path: "/" } })
+        }).catch(() => null);
+        if (pageRes && (pageRes.ok || pageRes.status === 409)) {
+          siteUrl = "https://" + owner + ".github.io/" + repo + "/";
+        }
+      }
+    } catch (e) {}
+
+    try { await publishConfigToGithub(); } catch (e) {}
+
+    ghLog(t("dash.github.done") + " " + siteUrl);
+    alert(t("dash.github.done") + " " + siteUrl);
   } catch (err) {
     ghLog(t("dash.github.err") + err.message);
     alert(t("dash.github.err") + err.message);
