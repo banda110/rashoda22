@@ -106,7 +106,7 @@ function heroAnimations() {
     scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 1.5 }
   });
 
-  if (typeof MotionPathPlugin !== "undefined") {
+  if (typeof MotionPathPlugin !== "undefined" && document.querySelector(".f1")) {
     gsap.to(".f1", {
       motionPath: {
         path: [
@@ -373,19 +373,20 @@ function horizontalAnimations() {
   const track = document.getElementById("horizontalTrack");
   if (!track) return;
 
-  const hST = ScrollTrigger.create({
-    trigger: "#horizontal-story",
-    start: "top top",
-    end: () => "+=" + (track.scrollWidth - window.innerWidth + 80),
-    pin: true, scrub: 1.5,
-    invalidateOnRefresh: true,
-    id: "horizontalStory"
-  });
+  const distance = () => track.scrollWidth - window.innerWidth + 80;
 
-  gsap.to(track, {
-    x: () => -(track.scrollWidth - window.innerWidth + 80),
+  const trackTween = gsap.to(track, {
+    x: () => -distance(),
     ease: "none",
-    scrollTrigger: hST
+    scrollTrigger: {
+      trigger: "#horizontal-story",
+      start: "top top",
+      end: () => "+=" + distance(),
+      pin: true,
+      scrub: 1.5,
+      invalidateOnRefresh: true,
+      id: "horizontalStory"
+    }
   });
 
   gsap.utils.toArray(".horizontal-panel").forEach((panel, i) => {
@@ -393,7 +394,7 @@ function horizontalAnimations() {
       opacity: 0, scale: 0.8, duration: speedify(0.6),
       scrollTrigger: {
         trigger: panel, start: "left 80%",
-        containerAnimation: hST,
+        containerAnimation: trackTween,
         once: true
       }
     });
