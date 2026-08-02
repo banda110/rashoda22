@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   buildFloatingGallery();
   setupBeforeAfter();
   initImageModal();
+  if (typeof applyCustomText === "function") applyCustomText();
   setTimeout(() => {
     if (typeof initAllAnimations === "function") {
       initAllAnimations();
@@ -35,6 +36,9 @@ function applyTheme() {
   root.style.setProperty("--glass", t.glassBg);
   root.style.setProperty("--glass-border", t.glassBorder);
   root.style.setProperty("--radius-xl", t.radius + "px");
+  if (t.fontSize) root.style.fontSize = t.fontSize + "px";
+  else root.style.fontSize = "";
+  applyCustomCss(t.customCSS);
   const bgUrl = getBackgroundImage();
   if (bgUrl) {
     document.body.style.backgroundImage = `linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.85)), url('${bgUrl}')`;
@@ -46,10 +50,25 @@ function applyTheme() {
   }
 }
 
+function applyCustomCss(css) {
+  let st = document.getElementById("custom-css");
+  if (css && css.trim()) {
+    if (!st) {
+      st = document.createElement("style");
+      st.id = "custom-css";
+      document.head.appendChild(st);
+    }
+    st.textContent = css;
+  } else if (st) {
+    st.remove();
+  }
+}
+
 function applyFallbackImages() {
   document.querySelectorAll("img[data-ph]").forEach((img) => {
     const section = img.closest("section[data-section]");
-    const key = section ? section.dataset.section : "";
+    const domId = section ? section.dataset.section : "";
+    const key = getSectionKeyByDomId(domId);
     const s = CONFIG.sections[key];
     let src = "";
     const idx = section
@@ -58,7 +77,10 @@ function applyFallbackImages() {
           img,
         )
       : 0;
-    if (s && s.images && s.images.length) {
+    const customKey = getCustomImgKey(domId, idx);
+    if (CONFIG.customText && CONFIG.customText[customKey]) {
+      src = CONFIG.customText[customKey];
+    } else if (s && s.images && s.images.length) {
       src = s.images[idx % s.images.length];
     } else {
       const media = getMediaUrls();
@@ -329,6 +351,7 @@ document.addEventListener("memory:config-ready", () => {
   if (typeof buildMarqueeTracks === "function") buildMarqueeTracks();
   if (typeof buildVerticalMarquee === "function") buildVerticalMarquee();
   if (typeof buildFloatingGallery === "function") buildFloatingGallery();
+  if (typeof applyCustomText === "function") applyCustomText();
   window.refreshSections();
 
   if (typeof ScrollTrigger !== "undefined") {
