@@ -907,6 +907,10 @@ function bindDashEvents() {
         const el = document.getElementById(section.id);
         if (el) el.style.display = e.target.checked ? "" : "none";
         saveConfig();
+        if (typeof window.reinitSection === "function") {
+          window.reinitSection(e.target.dataset.section);
+        }
+        if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
       }
     });
   });
