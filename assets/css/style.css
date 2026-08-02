@@ -1296,3 +1296,217 @@ html[dir="rtl"] .section-desc { direction: rtl; }
   .chapter-sticky { position: relative; height: auto; grid-template-columns: 1fr; }
   .chapter { height: auto; }
 }
+
+/* ============================================================
+   EDIT MODE + BEGINNER-FRIENDLY DASHBOARD
+   ============================================================ */
+.dash-publish-quick { white-space: nowrap; font-size: 0.72rem; }
+
+.dash-help-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.dash-help-card strong { color: var(--accent); display: block; margin-bottom: 0.4rem; font-size: 0.9rem; }
+
+.accent-preset-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.3rem 0 1rem; }
+.accent-preset {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.15);
+  cursor: pointer; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.accent-preset:hover { transform: scale(1.15); border-color: var(--text); }
+.accent-preset:active { transform: scale(0.95); box-shadow: 0 0 16px rgba(255,255,255,0.25); }
+
+.sec-switch-list { display: flex; flex-direction: column; gap: 6px; margin-top: 0.4rem; }
+.sec-switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.9rem;
+}
+.sec-switch-name { font-size: 0.8rem; color: var(--text); }
+.sec-switch { position: relative; display: inline-flex; cursor: pointer; }
+.sec-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.sec-switch-track {
+  width: 44px; height: 24px; border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  transition: background 0.25s;
+  position: relative;
+}
+.sec-switch-track::after {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform 0.25s;
+}
+.sec-switch input:checked + .sec-switch-track { background: var(--accent); }
+.sec-switch input:checked + .sec-switch-track::after { transform: translateX(20px); }
+html[dir="rtl"] .sec-switch input:checked + .sec-switch-track::after { transform: translateX(-20px); }
+
+/* --- Floating edit pencil --- */
+#editModeBtn {
+  position: fixed; right: 20px; bottom: 24px; z-index: 99990;
+  width: 54px; height: 54px; border-radius: 50%;
+  border: none; cursor: pointer; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  font-size: 1.3rem; box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#editModeBtn:hover { transform: scale(1.1) rotate(-8deg); box-shadow: 0 10px 40px rgba(255,77,109,0.5); }
+body.dash-open #editModeBtn, body.dash-open #editModeBar { display: none; }
+
+/* --- Edit mode outlines --- */
+.edit-mode .hero-tag, .edit-mode .hero-title, .edit-mode .hero-desc, .edit-mode .hero-btn,
+.edit-mode .login-title, .edit-mode .login-subtitle, .edit-mode .login-btn,
+.edit-mode .ending-title, .edit-mode .ending-desc, .edit-mode .ending-footer p,
+.edit-mode .section-label, .edit-mode .section-title, .edit-mode .section-desc,
+.edit-mode img[data-ph],
+.edit-mode .stack-card h3, .edit-mode .stack-card p,
+.edit-mode .timeline-date, .edit-mode .timeline-text h4, .edit-mode .timeline-text p,
+.edit-mode .quote-card p, .edit-mode .quote-card cite,
+.edit-mode .flip-back-content h3, .edit-mode .flip-date, .edit-mode .flip-back-content p:not(.flip-date),
+.edit-mode .horizontal-text h3, .edit-mode .horizontal-text p,
+.edit-mode .carousel-caption h3,
+.edit-mode .bento-overlay h3,
+.edit-mode .polaroid-caption,
+.edit-mode .chapter-content h3, .edit-mode .chapter-content p, .edit-mode .chapter-year,
+.edit-mode .note-inner p,
+.edit-mode .stat-label,
+.edit-mode .hbeat-item span,
+.edit-mode .reveal-text h3, .edit-mode .reveal-text p,
+.edit-mode .split-text h3, .edit-mode .split-text p, .edit-mode .split-signature {
+  cursor: pointer;
+}
+.edit-mode .hero-tag:hover, .edit-mode .hero-title:hover, .edit-mode .hero-desc:hover, .edit-mode .hero-btn:hover,
+.edit-mode .login-title:hover, .edit-mode .login-subtitle:hover, .edit-mode .login-btn:hover,
+.edit-mode .ending-title:hover, .edit-mode .ending-desc:hover, .edit-mode .ending-footer p:hover,
+.edit-mode .section-label:hover, .edit-mode .section-title:hover, .edit-mode .section-desc:hover,
+.edit-mode img[data-ph]:hover,
+.edit-mode .stack-card h3:hover, .edit-mode .stack-card p:hover,
+.edit-mode .timeline-date:hover, .edit-mode .timeline-text h4:hover, .edit-mode .timeline-text p:hover,
+.edit-mode .quote-card p:hover, .edit-mode .quote-card cite:hover,
+.edit-mode .flip-back-content h3:hover, .edit-mode .flip-date:hover, .edit-mode .flip-back-content p:not(.flip-date):hover,
+.edit-mode .horizontal-text h3:hover, .edit-mode .horizontal-text p:hover,
+.edit-mode .carousel-caption h3:hover,
+.edit-mode .bento-overlay h3:hover,
+.edit-mode .polaroid-caption:hover,
+.edit-mode .chapter-content h3:hover, .edit-mode .chapter-content p:hover, .edit-mode .chapter-year:hover,
+.edit-mode .note-inner p:hover,
+.edit-mode .stat-label:hover,
+.edit-mode .hbeat-item span:hover,
+.edit-mode .reveal-text h3:hover, .edit-mode .reveal-text p:hover,
+.edit-mode .split-text h3:hover, .edit-mode .split-text p:hover, .edit-mode .split-signature:hover {
+  outline: 2px dashed var(--accent); outline-offset: 3px;
+}
+
+/* --- Per-section toolbar --- */
+.edit-sec-tool {
+  position: absolute; top: 12px; right: 14px; z-index: 40;
+  display: flex; gap: 6px; opacity: 0;
+  transition: opacity 0.2s;
+}
+section[data-section]:hover .edit-sec-tool, .edit-sec-tool:hover { opacity: 1; }
+html[dir="rtl"] .edit-sec-tool { right: auto; left: 14px; }
+.edit-sec-btn {
+  width: 34px; height: 34px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(15,15,15,0.85); color: var(--text);
+  cursor: pointer; font-size: 1rem;
+  backdrop-filter: blur(6px);
+  transition: transform 0.15s, background 0.15s;
+}
+.edit-sec-btn:hover { transform: scale(1.1); background: var(--accent); color: #fff; }
+
+/* --- Top edit bar --- */
+#editModeBar {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 99990; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 999px;
+  background: rgba(15,15,15,0.92); border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  max-width: 94vw;
+}
+#editModeBar .edit-bar-label { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+@media (max-width: 600px) {
+  #editModeBar { border-radius: 14px; flex-wrap: wrap; justify-content: center; }
+  #editModeBar .edit-bar-label { display: none; }
+}
+
+/* --- Password gate --- */
+.edit-gate {
+  position: fixed; inset: 0; z-index: 99991;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+}
+.edit-gate-card {
+  width: min(92vw, 380px); padding: 2rem;
+  background: rgba(15,15,15,0.97); border: 1px solid var(--glass-border);
+  border-radius: 20px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.edit-gate-card h3 { font-size: 1rem; }
+.edit-gate-card input {
+  padding: 12px 14px; border-radius: 12px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+  color: var(--text); font-size: 1rem; text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.edit-gate-card input:focus { outline: none; border-color: var(--accent); }
+.edit-gate-err { min-height: 1.2em; font-size: 0.8rem; color: #ff4d6d; }
+
+/* --- Popover --- */
+.edit-popover {
+  position: fixed; z-index: 99992; width: 320px;
+  background: rgba(18,18,18,0.98); border: 1px solid var(--glass-border);
+  border-radius: 16px; padding: 0.9rem;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  animation: dashFadeIn 0.18s ease;
+}
+.edit-popover-head { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.4; }
+.edit-popover-input {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+  color: var(--text); font-size: 0.85rem; font-family: inherit;
+  resize: vertical; box-sizing: border-box;
+}
+.edit-popover-input:focus { outline: none; border-color: var(--accent); }
+.edit-popover-row { display: flex; gap: 8px; margin-top: 0.7rem; }
+.edit-popover-linkrow { display: flex; gap: 8px; margin-top: 0.6rem; }
+.edit-popover-linkrow .edit-popover-input { flex: 1; }
+.edit-popover-btn {
+  flex: 1; padding: 9px 10px; border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.06); color: var(--text);
+  cursor: pointer; font-size: 0.78rem; transition: background 0.15s, transform 0.15s;
+}
+.edit-popover-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+.edit-popover-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-secondary)); border: none; color: #fff; }
+.edit-popover-btn.danger { color: #ff6b6b; border-color: rgba(255,107,107,0.4); }
+.edit-pick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 0.7rem; max-height: 180px; overflow: auto; }
+.edit-pick-thumb {
+  aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+  border: 2px solid transparent; cursor: pointer; background: rgba(255,255,255,0.05);
+}
+.edit-pick-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.edit-pick-thumb:hover { border-color: var(--accent); }
+.edit-popover-hint { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+
+/* --- Toast --- */
+.edit-toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  z-index: 99993; padding: 12px 20px; border-radius: 999px;
+  background: #10b981; color: #fff; font-size: 0.85rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: dashFadeIn 0.25s ease; max-width: 92vw; text-align: center;
+}
+.edit-toast.err { background: #e74c3c; }
+.edit-toast.out { opacity: 0; transition: opacity 0.4s; }
