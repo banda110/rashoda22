@@ -6,11 +6,13 @@
 (function () {
   "use strict";
 
-  const ADMIN_VERSION = "5";
+  const ADMIN_VERSION = "6";
 
   const LS_SITES = "admin_sites";
   const LS_SETTINGS = "admin_settings";
   const LS_AUTH = "admin_auth";
+  const LS_TS = "admin_updatedAt";
+  const ADMIN_DATA_PATH = "AdminData.json";
 
   const ENGINE_FILES = [
     "index.html",
@@ -35,6 +37,9 @@
     template: null,
   };
 
+  let _syncTimer = null;
+  let _pulling = false;
+
   /* ---------- Storage helpers ---------- */
 
   function defaultSettings() {
@@ -42,6 +47,7 @@
       adminPassword: "admin123",
       githubToken: "",
       templateRepo: "banda110/rashoda22",
+      dataRepo: "banda110/rashoda22-data",
       vercelToken: "",
       vercelTeam: "",
       psiKey: "",
@@ -59,7 +65,17 @@
   }
 
   function saveSettings(s) {
+    const prev = getSettings().githubToken;
     localStorage.setItem(LS_SETTINGS, JSON.stringify(s));
+    if (!prev && s.githubToken) {
+      localStorage.setItem(LS_TS, "0");
+      cloudPull().then(function (changed) {
+        if (changed && isAuthed()) renderAll();
+      });
+    } else {
+      touchLocalTs();
+      scheduleCloudPush();
+    }
   }
 
   function getSites() {
@@ -73,6 +89,132 @@
 
   function saveSites(list) {
     localStorage.setItem(LS_SITES, JSON.stringify(list));
+    touchLocalTs();
+    scheduleCloudPush();
+  }
+
+  function touchLocalTs() {
+    const t = Date.now();
+    localStorage.setItem(LS_TS, String(t));
+    return t;
+  }
+
+  function getLocalTs() {
+    const n = parseInt(localStorage.getItem(LS_TS) || "0", 10);
+    return isNaN(n) ? 0 : n;
+  }
+
+  /* ---------- Shared data sync (private GitHub repo) ----------
+     The admin sites list + non-secret settings live in a private repo
+     (AdminData.json) so every origin shows the same data.
+     Secrets (githubToken / vercelToken) stay local-only. */
+
+  function cloudOwnerRepo() {
+    const tr = String(getSettings().dataRepo || "banda110/rashoda22-data").trim().replace(/\/+$/, "");
+    const parts = tr.split("/");
+    if (parts.length >= 2 && parts[0] && parts[1]) return { owner: parts[0], repo: parts[1] };
+    return { owner: "banda110", repo: "rashoda22-data" };
+  }
+
+  function cloudPublicSettings(s) {
+    return {
+      adminPassword: s.adminPassword,
+      templateRepo: s.templateRepo,
+      dataRepo: s.dataRepo,
+      vercelTeam: s.vercelTeam,
+    };
+  }
+
+  function buildCloudData() {
+    return {
+      version: 1,
+      sites: getSites(),
+      settings: cloudPublicSettings(getSettings()),
+      updatedAt: Date.now(),
+    };
+  }
+
+  async function cloudRead() {
+    const settings = getSettings();
+    const p = cloudOwnerRepo();
+    if (settings.githubToken) {
+      const res = await gh(settings.githubToken, "/repos/" + p.owner + "/" + p.repo + "/contents/" + ADMIN_DATA_PATH);
+      if (!res.ok) return null;
+      const j = await res.json().catch(function () {
+        return null;
+      });
+      if (!j || !j.content) return null;
+      return JSON.parse(decodeURIComponent(escape(atob(j.content))));
+    }
+    const res = await jfetch(
+      "https://raw.githubusercontent.com/" + p.owner + "/" + p.repo + "/main/" + ADMIN_DATA_PATH,
+      {},
+      "GitHub"
+    );
+    if (!res.ok) return null;
+    return res.json().catch(function () {
+      return null;
+    });
+  }
+
+  async function cloudPush(data, token) {
+    const settings = getSettings();
+    const t = token || settings.githubToken;
+    if (!t) return false;
+    const p = cloudOwnerRepo();
+    const body = JSON.stringify(data, null, 2);
+    try {
+      await pushFile(t, p.owner, p.repo, ADMIN_DATA_PATH, body, "Sync admin data");
+      return true;
+    } catch (e) {
+      try {
+        await createRepo(t, p.repo, "Memory Studio — مشترك بيانات لوحة الإدارة");
+        await pushFile(t, p.owner, p.repo, ADMIN_DATA_PATH, body, "Sync admin data");
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
+  function scheduleCloudPush() {
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(function () {
+      cloudPush(buildCloudData());
+    }, 1500);
+  }
+
+  async function cloudPull() {
+    if (_pulling) return false;
+    _pulling = true;
+    let changed = false;
+    try {
+      const data = await cloudRead();
+      if (data && Array.isArray(data.sites)) {
+        if (data.updatedAt > getLocalTs()) {
+          localStorage.setItem(LS_SITES, JSON.stringify(data.sites));
+          if (data.settings && data.settings.templateRepo) {
+            const local = getSettings();
+            const merged = defaultSettings();
+            Object.assign(merged, data.settings);
+            merged.githubToken = local.githubToken || "";
+            merged.vercelToken = local.vercelToken || "";
+            merged.psiKey = local.psiKey || "";
+            localStorage.setItem(LS_SETTINGS, JSON.stringify(merged));
+          }
+          localStorage.setItem(LS_TS, String(data.updatedAt));
+          changed = true;
+        }
+      } else if (getSettings().githubToken && (getSites().length || getLocalTs())) {
+        await cloudPush(buildCloudData(), getSettings().githubToken);
+        touchLocalTs();
+      }
+    } catch (e) {
+      /* offline — use local cache */
+    } finally {
+      _pulling = false;
+    }
+    return changed;
   }
 
   /* ---------- DOM helpers ---------- */
@@ -977,6 +1119,7 @@
     $("sAdminPass").value = s.adminPassword;
     $("sGhToken").value = s.githubToken;
     $("sTemplateRepo").value = s.templateRepo;
+    $("sDataRepo").value = s.dataRepo;
     $("sVercelToken").value = s.vercelToken;
     $("sVercelTeam").value = s.vercelTeam;
     $("sPsiKey").value = s.psiKey;
@@ -987,6 +1130,7 @@
     s.adminPassword = $("sAdminPass").value.trim() || s.adminPassword;
     s.githubToken = $("sGhToken").value.trim();
     s.templateRepo = $("sTemplateRepo").value.trim() || s.templateRepo;
+    s.dataRepo = $("sDataRepo").value.trim() || "banda110/rashoda22-data";
     s.vercelToken = $("sVercelToken").value.trim();
     s.vercelTeam = $("sVercelTeam").value.trim();
     s.psiKey = $("sPsiKey").value.trim();
@@ -1093,6 +1237,12 @@
     const sub = document.querySelector(".brand-sub");
     if (sub) sub.textContent = "لوحة الإدارة — v" + ADMIN_VERSION;
     bindEvents();
+    cloudPull().then(function (changed) {
+      if (isAuthed()) {
+        renderAll();
+        if (changed) toast("تمت مزامنة البيانات المشتركة ✓");
+      }
+    });
     if (isAuthed()) {
       $("loginGate").classList.add("hidden");
       $("app").classList.remove("hidden");
