@@ -90,7 +90,10 @@
     }
   ],
   "customText": {
-    "sec_heartbeat_title": " كل سنه وانتي طيبه "
+    "sec_heartbeat_title": " كل سنه وانتي طيبه ",
+    "sec_finalEnding_title": "بحبك ",
+    "sec_finalEnding_subtitle": "بحبك ",
+    "sec_finalEnding_desc": "بحبك "
   },
   "sections": {
     "hero": {
@@ -360,9 +363,9 @@
     "finalEnding": {
       "id": "final-ending",
       "enabled": true,
-      "title": "Final Cinematic Ending",
-      "subtitle": "Ending",
-      "description": "A grand finale to our story.",
+      "title": "بحبك ",
+      "subtitle": "بحبك ",
+      "description": "بحبك ",
       "animationSpeed": 1,
       "layout": "ending",
       "animationStyle": "",
