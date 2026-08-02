@@ -133,6 +133,7 @@ function dashboardHTML() {
           <button class="dash-menu-btn" id="dashMenuToggle">&#x2630;</button>
           <h2 id="dashPanelTitle">${t("dash.general.title")}</h2>
           <div style="display:flex;align-items:center;gap:0.5rem;">
+            <button class="dash-btn primary dash-edit-live" data-editlive title="${t("dash.editLive")}">&#9998; ${t("dash.editLive")}</button>
             <button class="dash-btn primary dash-publish-quick" data-quickpublish title="${t("dash.github.publishHint")}">&#8593; ${t("dash.github.publish")}</button>
             <button class="lang-switch dash-lang-btn" onclick="toggleLang()">${t("lang.switch")}</button>
             <button class="dash-topbar-close" id="dashClose">&times;</button>
@@ -282,6 +283,7 @@ function generalPanel() {
       <p>2. ${t("dash.general.help2")}</p>
       <p>3. ${t("dash.general.help3")}</p>
     </div>
+    <button class="dash-btn primary dash-edit-live" data-editlive style="width:100%;margin-bottom:0.5rem;">&#9998; ${t("dash.editLiveBtn")}</button>
     <button class="dash-btn primary" data-quickpublish style="width:100%;margin-bottom:0.5rem;">&#8593; ${t("dash.github.publish")}</button>
     <button class="dash-btn" id="exportBtn">${t("dash.general.export")}</button>
     <button class="dash-btn" id="importBtn">${t("dash.general.import")}</button>
@@ -861,6 +863,15 @@ function bindDashEvents() {
   document.querySelectorAll("[data-quickpublish]").forEach(btn =>
     btn.addEventListener("click", publishConfigToGithub)
   );
+  document.querySelectorAll("[data-editlive]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      if (typeof window.openEditFromDashboard === "function") {
+        window.openEditFromDashboard();
+      } else {
+        alert("editor.js is not loaded.");
+      }
+    })
+  );
 
   /* Media Library */
   document.getElementById("addMediaBtn")?.addEventListener("click", addMediaItem);
@@ -1078,6 +1089,8 @@ function bindDashEvents() {
   /* Logout */
   document.getElementById("dashLogout")?.addEventListener("click", () => {
     localStorage.removeItem("dashboard_auth");
+    localStorage.removeItem("editor_auth");
+    sessionStorage.removeItem("editor_auth");
     document.querySelector(".dash-overlay")?.remove();
     renderDashGate();
   });
