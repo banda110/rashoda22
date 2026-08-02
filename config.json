@@ -4,8 +4,8 @@
   "theme": {
     "background": "#0a0a0a",
     "backgroundSecondary": "#111111",
-    "accent": "#ff4d6d",
-    "accentSecondary": "#7c4dff",
+    "accent": "#22d3ee",
+    "accentSecondary": "#a78bfa",
     "accentTertiary": "#00c2ff",
     "text": "#ffffff",
     "textMuted": "rgba(255,255,255,0.6)",
