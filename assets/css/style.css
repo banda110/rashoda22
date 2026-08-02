@@ -1349,22 +1349,13 @@ html[dir="rtl"] .section-desc { direction: rtl; }
 .sec-switch input:checked + .sec-switch-track::after { transform: translateX(20px); }
 html[dir="rtl"] .sec-switch input:checked + .sec-switch-track::after { transform: translateX(-20px); }
 
-/* --- Floating edit pencil --- */
-#editModeBtn {
-  position: fixed; right: 20px; bottom: 24px; z-index: 99990;
-  width: 54px; height: 54px; border-radius: 50%;
-  border: none; cursor: pointer; color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-  font-size: 1.3rem; box-shadow: 0 8px 30px rgba(0,0,0,0.45);
-  transition: transform 0.2s, box-shadow 0.2s;
-  animation: editPulse 2.6s ease-in-out infinite;
+/* --- Edit mode is entered from the dashboard only --- */
+body.dash-open #editModeBar { display: none; }
+.dash-edit-live {
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary)) !important;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(255,77,109,0.35);
 }
-@keyframes editPulse {
-  0%, 100% { box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 0 rgba(255,77,109,0.55); }
-  50% { box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 14px rgba(255,77,109,0); }
-}
-#editModeBtn:hover { transform: scale(1.1) rotate(-8deg); box-shadow: 0 10px 40px rgba(255,77,109,0.5); }
-body.dash-open #editModeBtn, body.dash-open #editModeBar { display: none; }
 
 /* No accidental text selection while editing */
 body.edit-mode { user-select: none; -webkit-user-select: none; }
