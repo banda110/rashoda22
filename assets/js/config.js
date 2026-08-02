@@ -13,6 +13,8 @@ const CONFIG = {
     glassBorder: "rgba(255,255,255,0.08)",
     blur: 20,
     radius: 30,
+    fontSize: 16,
+    customCSS: "",
     backgroundImage: "",
   },
   effects: {
@@ -45,6 +47,7 @@ const CONFIG = {
     repo: "",
   },
   mediaLibrary: [],
+  customText: {},
   sections: {
     hero: {
       id: "hero",
@@ -894,6 +897,19 @@ function getSectionImages(sectionKey) {
   const bg = getBackgroundImage();
   if (bg) return [bg];
   return [];
+}
+
+function getSectionKeyByDomId(domId) {
+  if (CONFIG.sections) {
+    for (const k in CONFIG.sections) {
+      if (CONFIG.sections[k] && CONFIG.sections[k].id === domId) return k;
+    }
+  }
+  return String(domId || "").replace(/-([a-z])/g, (m, c) => c.toUpperCase());
+}
+
+function getCustomImgKey(domId, idx) {
+  return "img_" + getSectionKeyByDomId(domId) + "_" + idx;
 }
 
 const SECTIONS_LIST = [
