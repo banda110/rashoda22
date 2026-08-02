@@ -146,6 +146,7 @@ const translations = {
     "dash.presets": "Animation Presets",
     "dash.sections": "Sections",
     "dash.logout": "→ Logout",
+    "dash.adminPanel": "🛠 Admin Panel",
 
     /* Dashboard nav items (static) */
     "dash.nav.general": "⚙ General",
@@ -604,6 +605,7 @@ const translations = {
     "dash.presets": "الإعدادات المسبقة للرسوم المتحركة",
     "dash.sections": "الأقسام",
     "dash.logout": "→ تسجيل الخروج",
+    "dash.adminPanel": "🛠 لوحة الإدارة",
 
     "dash.nav.general": "⚙ عام",
     "dash.nav.theme": "◐ المظهر",
