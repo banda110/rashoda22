@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Studio — لوحة إدارة المناسبات</title>
+    <link rel="stylesheet" href="assets/css/admin.css" />
+  </head>
+  <body>
+    <div class="aurora"></div>
+
+    <!-- Login gate -->
+    <div id="loginGate" class="gate">
+      <div class="gate-card">
+        <div class="gate-logo">💌</div>
+        <h1>Memory Studio</h1>
+        <p>لوحة إدارة المناسبات والمواقع</p>
+        <input id="loginPass" type="password" placeholder="كلمة سر الأدمن" autocomplete="off" />
+        <button id="btnLogin" class="btn btn-primary">دخول</button>
+        <div id="loginError" class="login-error hidden"></div>
+      </div>
+    </div>
+
+    <!-- App -->
+    <div id="app" class="app hidden">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-logo">💌</span>
+          <div>
+            <div class="brand-name">Memory Studio</div>
+            <div class="brand-sub">لوحة الإدارة</div>
+          </div>
+        </div>
+        <nav class="tabs">
+          <button class="tab-btn active" data-tab="sites">المواقع</button>
+          <button class="tab-btn" data-tab="create">إنشاء جديد</button>
+          <button class="tab-btn" data-tab="analytics">التحليلات</button>
+          <button class="tab-btn" data-tab="settings">الإعدادات</button>
+        </nav>
+        <button id="btnLogout" class="btn btn-ghost">خروج</button>
+      </header>
+
+      <main>
+        <!-- Sites -->
+        <section id="tab-sites" class="tab-panel active">
+          <div class="panel-head">
+            <div>
+              <h2>المواقع</h2>
+              <p id="sitesCount" class="muted">لا توجد مواقع بعد</p>
+            </div>
+            <input id="siteSearch" class="search" type="text" placeholder="بحث بالاسم أو المناسبة..." />
+            <button class="btn btn-primary" data-goto="create">+ إنشاء موقع</button>
+          </div>
+          <div id="sitesTable" class="sites-list"></div>
+        </section>
+
+        <!-- Create -->
+        <section id="tab-create" class="tab-panel">
+          <div class="wizard">
+            <div class="wizard-steps">
+              <div class="wstep active" data-step="1">1 — المناسبة</div>
+              <div class="wstep" data-step="2">2 — المظهر</div>
+              <div class="wstep" data-step="3">3 — البيانات</div>
+            </div>
+
+            <div id="step1" class="wstep-body">
+              <h2>اختار المناسبة</h2>
+              <div id="occasionGrid" class="grid grid-occ"></div>
+            </div>
+
+            <div id="step2" class="wstep-body hidden">
+              <div class="wstep-top">
+                <h2>اختار المظهر</h2>
+                <div class="occasion-pill" id="step2Occasion"></div>
+              </div>
+              <p class="muted">10 مظاهر مختلفة على نفس المحرك — كل واحد يغيّر الألوان والخطوط والأقسام</p>
+              <div id="templateGrid" class="grid grid-tpl"></div>
+            </div>
+
+            <div id="step3" class="wstep-body hidden">
+              <h2>بيانات الموقع</h2>
+              <div class="summary" id="createSummary"></div>
+              <div class="form">
+                <label>اسم العميل / الموقع</label>
+                <input id="fSiteName" type="text" placeholder="مثال: Ahmed & Sara" />
+                <label>باسورد صفحة الزائر</label>
+                <input id="fSitePass" type="text" placeholder="كلمة السر اللي يدخل بيها الزائر" />
+                <label>باسورد لوحة التعديل (اختياري)</label>
+                <input id="fDashPass" type="text" placeholder="لو حطيت سكربت التعديل، غيّرها" />
+                <div class="row">
+                  <button id="btnBack" class="btn btn-ghost">رجوع</button>
+                  <button id="btnCreate" class="btn btn-primary">إنشاء الموقع ونشره 🚀</button>
+                </div>
+              </div>
+              <div id="createLog" class="log hidden"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics -->
+        <section id="tab-analytics" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>التحليلات والكاش</h2>
+              <p class="muted">سرعة المواقع عبر Google PageSpeed + كاش/نشر Vercel</p>
+            </div>
+            <button id="btnRunAnalytics" class="btn btn-primary">تشغيل الفحص</button>
+          </div>
+          <div class="alert" id="analyticsAlert"></div>
+          <div id="analyticsTable" class="analytics-list"></div>
+        </section>
+
+        <!-- Settings -->
+        <section id="tab-settings" class="tab-panel">
+          <h2>الإعدادات</h2>
+          <div class="settings-grid">
+            <div class="setting-card">
+              <h3>🔐 الأدمن</h3>
+              <label>كلمة سر الأدمن</label>
+              <input id="sAdminPass" type="password" />
+            </div>
+            <div class="setting-card">
+              <h3>🐙 GitHub</h3>
+              <label>GitHub Token</label>
+              <input id="sGhToken" type="password" placeholder="ghp_..." />
+              <label>ريبو المحرك (التمبلت الأصلي)</label>
+              <input id="sTemplateRepo" type="text" placeholder="owner/repo" />
+            </div>
+            <div class="setting-card">
+              <h3>▲ Vercel</h3>
+              <label>Vercel Token</label>
+              <input id="sVercelToken" type="password" placeholder="للتنظيف الكاش والنشر" />
+              <label>Team ID (اختياري)</label>
+              <input id="sVercelTeam" type="text" />
+            </div>
+            <div class="setting-card">
+              <h3>⚡ PageSpeed</h3>
+              <label>API Key (اختياري — بدونها تعمل بمعدل محدود)</label>
+              <input id="sPsiKey" type="text" />
+            </div>
+          </div>
+          <button id="btnSaveSettings" class="btn btn-primary">حفظ الإعدادات</button>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <div id="modal" class="modal hidden"></div>
+
+    <script src="assets/js/admin-templates.js"></script>
+    <script src="assets/js/admin.js"></script>
+  </body>
+</html>
