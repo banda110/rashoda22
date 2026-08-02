@@ -283,6 +283,103 @@
     );
   }
 
+  async function sha1Hex(str) {
+    const data = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest("SHA-1", data);
+    return Array.from(new Uint8Array(buf))
+      .map(function (b) {
+        return b.toString(16).padStart(2, "0");
+      })
+      .join("");
+  }
+
+  async function deployToVercel(projectName, filesList, settings) {
+    const auth = { Authorization: "Bearer " + settings.vercelToken };
+    const team = vq(settings, {});
+    const uploads = [];
+    const entries = [];
+    for (const f of filesList) {
+      const digest = await sha1Hex(f.content);
+      entries.push({ file: f.path, sha: digest });
+      uploads.push(
+        fetch("https://api.vercel.com/v2/files" + team, {
+          method: "POST",
+          headers: Object.assign({}, auth, {
+            "x-now-digest": digest,
+            "x-vercel-digest": digest,
+            "Content-Type": "application/octet-stream",
+          }),
+          body: f.content,
+        })
+      );
+    }
+    await Promise.all(uploads);
+    const dep = await fetch("https://api.vercel.com/v13/deployments" + team, {
+      method: "POST",
+      headers: Object.assign({}, auth, { "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        name: projectName,
+        files: entries,
+        target: "production",
+        projectSettings: {
+          framework: null,
+          installCommand: "",
+          buildCommand: "",
+          outputDirectory: "",
+        },
+      }),
+    });
+    if (!dep.ok) {
+      const j = await dep.json().catch(function () {
+        return {};
+      });
+      throw new Error(
+        "نشر Vercel فشل (" + (j.error && j.error.message ? j.error.message : dep.status) + ")"
+      );
+    }
+    return dep.json();
+  }
+
+  function buildDeployFiles(site, settings) {
+    const tpl = ADMIN_TEMPLATES.getTemplate(site.template);
+    const files = [];
+    return (async function () {
+      for (const p of ENGINE_FILES) {
+        const text = await fetchEngineFile(settings.templateRepo, p);
+        files.push({
+          path: p,
+          content:
+            p === "assets/js/config.js"
+              ? patchConfigJs(text, site.owner + "/" + site.repo, site.dashPassword || "love")
+              : text,
+        });
+      }
+      if (tpl) {
+        const config = buildClientConfig(
+          tpl,
+          site.owner,
+          site.repo,
+          site.sitePassword,
+          site.dashPassword || "love"
+        );
+        files.push({ path: "config.json", content: JSON.stringify(config, null, 2) });
+      }
+      return files;
+    })();
+  }
+
+  async function redeploySite(site) {
+    const settings = getSettings();
+    if (!settings.vercelToken) throw new Error("حط Vercel Token في الإعدادات الأول");
+    const files = await buildDeployFiles(site, settings);
+    await deployToVercel(site.repo, files, settings);
+    site.liveUrl = "https://" + site.repo + ".vercel.app";
+    site.vercelDeployed = true;
+    site.vercel = { lastDeploy: Date.now() };
+    saveSites(getSites());
+    return site.liveUrl;
+  }
+
   /* ---------- Create wizard ---------- */
 
   function renderOccasions() {
@@ -423,6 +520,7 @@
       logCreate("تم إنشاء الريبو ✓", "ok");
 
       const ownerRepo = owner + "/" + repoName;
+      const deployFiles = [];
 
       for (const path of ENGINE_FILES) {
         const text = await fetchEngineFile(settings.templateRepo, path);
@@ -432,18 +530,21 @@
             : text;
         await pushFile(settings.githubToken, owner, repoName, path, finalText, "Init " + path);
         logCreate("رفع " + path + " ✓", "ok");
+        deployFiles.push({ path: path, content: finalText });
       }
 
       const config = buildClientConfig(tpl, owner, repoName, sitePass, dashPass);
+      const configJson = JSON.stringify(config, null, 2);
       await pushFile(
         settings.githubToken,
         owner,
         repoName,
         "config.json",
-        JSON.stringify(config, null, 2),
+        configJson,
         "Add site config"
       );
       logCreate("رفع config.json ✓", "ok");
+      deployFiles.push({ path: "config.json", content: configJson });
 
       const liveUrl = "https://" + repoName + ".vercel.app";
       await pushFile(
@@ -455,6 +556,20 @@
         "Add README"
       );
       logCreate("رفع README ✓", "ok");
+
+      let vercelDeployed = false;
+      if (settings.vercelToken) {
+        try {
+          await deployToVercel(repoName, deployFiles, settings);
+          vercelDeployed = true;
+          logCreate("تم النشر على Vercel مباشرة ✓ — " + liveUrl, "ok");
+        } catch (err) {
+          logCreate("تنبيه: نشر Vercel فشل (" + err.message + ")", "err");
+          logCreate("هتسويها يدوي: Vercel ← Add New Project ← اختر " + repoName, "info");
+        }
+      } else {
+        logCreate("مفيش Vercel Token في الإعدادات — انشر يدوي من README", "info");
+      }
 
       const site = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -470,6 +585,7 @@
         repoUrl: "https://github.com/" + ownerRepo,
         liveUrl: liveUrl,
         vercelProjectId: "",
+        vercelDeployed: vercelDeployed,
         createdAt: Date.now(),
         psi: null,
         vercel: null,
@@ -479,8 +595,8 @@
       saveSites(sites);
 
       logCreate("تم إنشاء الموقع ونشره بالكامل 🎉", "ok");
-      logCreate("اللينك المباشر (بعد النشر على Vercel): " + liveUrl, "info");
-      toast("تم إنشاء الموقع ✓");
+      logCreate("اللينك المباشر: " + liveUrl, "info");
+      toast("تم إنشاء الموقع ونشره ✓");
       setTimeout(function () {
         switchTab("sites");
       }, 800);
@@ -537,9 +653,11 @@
         esc((s.liveUrl || "").replace(/^https?:\/\//, "")) + "</a>" +
         "</div></div></div>" +
         '<div class="site-meta">أنشئ ' + fmtDate(s.createdAt) +
-        "<br/>الكاش: " + cacheLabel(s) + "</div>" +
+        "<br/>" + (s.vercelDeployed ? '<span class="badge ok">▲ منشور</span>' : '<span class="badge err">▲ غير منشور</span>') +
+        " " + cacheLabel(s) + "</div>" +
         '<div class="site-actions">' +
         '<button class="btn btn-sm" data-act="copy" data-live="' + esc(s.liveUrl || "") + '">📋 نسخ اللينك</button>' +
+        '<button class="btn btn-sm" data-act="deploy" data-id="' + s.id + '">▲ نشر</button>' +
         '<button class="btn btn-sm" data-act="open" data-id="' + s.id + '">فتح</button>' +
         '<button class="btn btn-sm" data-act="edit" data-id="' + s.id + '">تعديل</button>' +
         '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + s.id + '">حذف</button>' +
@@ -656,6 +774,14 @@
           );
         }
       }
+      if (settings.vercelToken) {
+        const files = await buildDeployFiles(s, settings);
+        await deployToVercel(s.repo, files, settings);
+        s.liveUrl = "https://" + s.repo + ".vercel.app";
+        s.vercelDeployed = true;
+        s.vercel = { lastDeploy: Date.now() };
+        saveSites(sites);
+      }
       toast("تم الحفظ وإعادة النشر ✓");
     } catch (err) {
       toast(err.message, true);
@@ -674,6 +800,26 @@
     saveSites(sites);
     renderSites();
     toast("تم حذف الموقع من اللوحة (الريبو باقي على GitHub)");
+  }
+
+  function handleManualDeploy(btn) {
+    const s = getSites().find(function (x) {
+      return x.id === btn.dataset.id;
+    });
+    if (!s) return;
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = "جارِ النشر...";
+    redeploySite(s)
+      .then(function (url) {
+        toast("تم النشر على Vercel ✓ " + url);
+        renderSites();
+      })
+      .catch(function (err) {
+        toast(err.message, true);
+        btn.disabled = false;
+        btn.textContent = old;
+      });
   }
 
   /* ---------- Analytics ---------- */
@@ -745,15 +891,25 @@
     };
   }
 
+  function vq(settings, extra) {
+    const parts = [];
+    if (settings.vercelTeam) {
+      const t = String(settings.vercelTeam).trim();
+      parts.push((/^team_/.test(t) ? "teamId=" : "slug=") + encodeURIComponent(t));
+    }
+    for (const k in extra) parts.push(k + "=" + encodeURIComponent(extra[k]));
+    return parts.length ? "?" + parts.join("&") : "";
+  }
+
   async function runVercel(s) {
     const settings = getSettings();
     if (!settings.vercelToken) throw new Error("حط Vercel Token في الإعدادات الأول");
-    const team = settings.vercelTeam ? "?teamId=" + encodeURIComponent(settings.vercelTeam) : "";
+    const auth = { Authorization: "Bearer " + settings.vercelToken };
     let projectId = s.vercelProjectId;
     if (!projectId) {
       const pr = await fetch(
-        "https://api.vercel.com/v9/projects/" + encodeURIComponent(s.repo) + team,
-        { headers: { Authorization: "Bearer " + settings.vercelToken } }
+        "https://api.vercel.com/v9/projects/" + encodeURIComponent(s.repo) + vq(settings, {}),
+        { headers: auth }
       );
       if (pr.ok) {
         const pj = await pr.json();
@@ -764,10 +920,10 @@
       throw new Error("مش لاقي مشروع Vercel باسم " + s.repo + " — افتح التعديل وحدّد Project ID");
     }
     s.vercelProjectId = projectId;
-    const sep = team ? "&" : "?";
     const depRes = await fetch(
-      "https://api.vercel.com/v6/deployments" + (team || "?") + sep + "projectId=" + encodeURIComponent(projectId) + "&limit=1",
-      { headers: { Authorization: "Bearer " + settings.vercelToken } }
+      "https://api.vercel.com/v6/deployments" +
+        vq(settings, { projectId: projectId, limit: 1 }),
+      { headers: auth }
     );
     if (!depRes.ok) throw new Error("قراءة النشرات فشلت: " + depRes.status);
     const depJ = await depRes.json();
@@ -785,10 +941,17 @@
     if (!settings.vercelToken) throw new Error("حط Vercel Token في الإعدادات الأول");
     if (!s.vercelProjectId) await runVercel(s);
     if (!s.vercelProjectId) throw new Error("محددش Vercel Project ID للموقع");
-    const team = settings.vercelTeam ? "?teamId=" + encodeURIComponent(settings.vercelTeam) : "";
     const res = await fetch(
-      "https://api.vercel.com/v1/projects/" + encodeURIComponent(s.vercelProjectId) + "/cache" + team,
-      { method: "DELETE", headers: { Authorization: "Bearer " + settings.vercelToken } }
+      "https://api.vercel.com/v1/edge-cache/invalidate-by-tags" +
+        vq(settings, { projectIdOrName: s.vercelProjectId }),
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + settings.vercelToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tags: ["*"] }),
+      }
     );
     if (!res.ok) throw new Error("تنظيف الكاش فشل: " + res.status);
     return true;
@@ -898,6 +1061,7 @@
       if (act === "copy") copyText(btn.dataset.live || "");
       else if (act === "open") openSite(btn.dataset.id);
       else if (act === "edit") showEditModal(btn.dataset.id);
+      else if (act === "deploy") handleManualDeploy(btn);
       else if (act === "del") {
         if (confirm("حذف الموقع من اللوحة؟ (الريبو هيفضل على GitHub)")) deleteSite(btn.dataset.id);
       }
