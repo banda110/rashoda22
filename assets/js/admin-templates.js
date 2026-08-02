@@ -395,11 +395,22 @@ const ADMIN_TEMPLATES = (function () {
     );
   }
 
+  const ALL_SECTION_KEYS = [
+    "hero", "floatingMemories", "marquee", "stackCards", "timeline",
+    "memoryExplosion", "flipCards", "loveQuotes", "statistics", "orbitGallery",
+    "horizontalStory", "parallaxLayers", "photoWall", "cinematicReveal",
+    "beforeAfter", "floatingPolaroids", "carousel", "spotlight", "bentoGrid",
+    "splitStory", "stickyChapters", "verticalMarquee", "loveNotes", "heartbeat",
+    "finalEnding",
+  ];
+
   function buildTemplate(occasion, look) {
     const copy = COPY[occasion.id] || COPY.love;
     const sectTitles = SECTION_TITLES[occasion.id] || {};
     const sections = {};
-    (look.disabled || []).forEach((id) => {
+    /* New sites always start EMPTY: the owner enables the animations they
+       want directly from the page (edit mode → Sections). */
+    ALL_SECTION_KEYS.forEach((id) => {
       sections[id] = { enabled: false };
     });
     const config = {
