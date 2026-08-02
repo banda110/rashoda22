@@ -35,6 +35,13 @@
       "edit.none": "No photos yet. Add some in Media Library or use a link.",
       "edit.noDash": "Open settings in the dashboard.",
       "edit.hintNotActive": "To edit, open the dashboard and press the edit button.",
+      "edit.sections": "Sections",
+      "edit.sectionsHint": "Show / hide the animations of this page. Enable one and it will appear below.",
+      "edit.show": "Show",
+      "edit.hide": "Hide",
+      "edit.close": "Close",
+      "edit.statnum": "Edit the number",
+      "edit.hbeatnum": "Edit the number",
     },
     ar: {
       "edit.enter": "عدّل الموقع",
@@ -60,6 +67,13 @@
       "edit.none": "مفيش صور بعد. ضيف صور في مكتبة الوسائط أو استخدم رابط.",
       "edit.noDash": "افتح الإعدادات من لوحة التحكم.",
       "edit.hintNotActive": "للتعديل افتح لوحة التحكم وادوس زر التعديل على الصفحة.",
+      "edit.sections": "الأقسام",
+      "edit.sectionsHint": "إظهار / إخفاء أنيميشن الصفحة. فعّل أي قسم وهيظهر تحت.",
+      "edit.show": "إظهار",
+      "edit.hide": "إخفاء",
+      "edit.close": "إغلاق",
+      "edit.statnum": "عدّل الرقم",
+      "edit.hbeatnum": "عدّل الرقم",
     },
   };
 
@@ -226,12 +240,26 @@
       sg.querySelectorAll(".stat-label").forEach((s, i) => {
         if (s && C["stat_" + (i + 1)] !== undefined) s.textContent = C["stat_" + (i + 1)];
       });
+      sg.querySelectorAll(".stat-number").forEach((n, i) => {
+        const v = C["statnum_" + (i + 1)];
+        if (v !== undefined && v !== "") {
+          if (/^[\d.,]+$/.test(v)) {
+            n.dataset.target = String(v).replace(/,/g, "");
+            n.textContent = "0";
+          } else {
+            n.textContent = v;
+          }
+        }
+      });
     }
 
     const hc = document.getElementById("heartbeatContainer");
     if (hc) {
       hc.querySelectorAll(".hbeat-item span").forEach((s, i) => {
         if (s && C["hbeat_" + (i + 1)] !== undefined) s.textContent = C["hbeat_" + (i + 1)];
+      });
+      hc.querySelectorAll(".hbeat-num").forEach((n, i) => {
+        if (n && C["hbeatnum_" + (i + 1)] !== undefined) n.textContent = C["hbeatnum_" + (i + 1)];
       });
     }
 
@@ -341,8 +369,14 @@
         const stats = inSec.querySelectorAll(".stat-label");
         for (let i = 0; i < stats.length; i++) if (el === stats[i]) return "stat_" + (i + 1);
 
+        const statnums = inSec.querySelectorAll(".stat-number");
+        for (let i = 0; i < statnums.length; i++) if (el === statnums[i]) return "statnum_" + (i + 1);
+
         const hbs = inSec.querySelectorAll(".hbeat-item span");
         for (let i = 0; i < hbs.length; i++) if (el === hbs[i]) return "hbeat_" + (i + 1);
+
+        const hbnums = inSec.querySelectorAll(".hbeat-num");
+        for (let i = 0; i < hbnums.length; i++) if (el === hbnums[i]) return "hbeatnum_" + (i + 1);
 
         if (el === inSec.querySelector(".reveal-text h3")) return "reveal_title";
         if (el === inSec.querySelector(".reveal-text p")) return "reveal_desc";
@@ -624,6 +658,7 @@
             CONFIG.sections[key].enabled = !CONFIG.sections[key].enabled;
             sec.style.display = CONFIG.sections[key].enabled ? "" : "none";
             saveConfig();
+            toggleSectionLifecycle(key);
           }
         } else if (act === "open") {
           if (typeof window.openDashboardSection === "function") {
@@ -677,6 +712,7 @@
     bar = makeEl(`
       <div id="editModeBar">
         <span class="edit-bar-label">&#9998; ${L("edit.clickHint")}</span>
+        <button class="edit-popover-btn" data-act="sections">&#9776; ${L("edit.sections")}</button>
         <button class="edit-popover-btn primary" data-act="publish">&#8593; ${L("edit.publish")}</button>
         <button class="edit-popover-btn" data-act="done">${L("edit.exit")}</button>
       </div>`);
@@ -684,8 +720,70 @@
       const act = e.target.closest("[data-act]")?.dataset.act;
       if (act === "done") exitEditMode();
       else if (act === "publish") publishNow();
+      else if (act === "sections") openSectionsPanel();
     });
     document.body.appendChild(bar);
+  }
+
+  /* Run a section's animation lifecycle after it is shown/hidden. */
+  function toggleSectionLifecycle(key) {
+    const el = document.getElementById(CONFIG.sections[key] && CONFIG.sections[key].id);
+    if (el) el.style.display = CONFIG.sections[key].enabled ? "" : "none";
+    if (typeof window.reinitSection === "function") window.reinitSection(key);
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+  }
+
+  /* Panel listing every section so the owner can show/hide hidden
+     animations even when the section is display:none. */
+  function openSectionsPanel() {
+    closePopover();
+    const rows = (typeof SECTIONS_LIST !== "undefined" ? SECTIONS_LIST : [])
+      .map((entry) => {
+        const key = getSectionKeyByDomId(entry.id);
+        const s = CONFIG.sections[key];
+        if (!s) return "";
+        const on = s.enabled !== false;
+        const label =
+          (typeof t === "function" &&
+            typeof window !== "undefined" &&
+            t("dash.panel." + entry.tab) !== "dash.panel." + entry.tab
+            ? t("dash.panel." + entry.tab)
+            : entry.label) || entry.label;
+        return `
+          <div class="edit-sec-row" data-key="${key}">
+            <span class="edit-sec-name">${label}</span>
+            <label class="edit-sec-switch">
+              <input type="checkbox" data-sk="${key}" ${on ? "checked" : ""}>
+              <span class="edit-sec-track"></span>
+            </label>
+          </div>`;
+      })
+      .join("");
+
+    const wrap = makeEl(`
+      <div class="edit-popover-head">${L("edit.sectionsHint")}</div>
+      <div class="edit-sec-list">${rows}</div>
+      <div class="edit-popover-row">
+        <button class="edit-popover-btn" data-act="close">${L("edit.close")}</button>
+      </div>`);
+
+    wrap.addEventListener("click", (e) => {
+      if (e.target.closest('[data-act="close"]')) closePopover();
+    });
+    wrap.addEventListener("change", (e) => {
+      const cb = e.target.closest('input[data-sk]');
+      if (!cb) return;
+      const key = cb.dataset.sk;
+      if (CONFIG.sections[key]) {
+        CONFIG.sections[key].enabled = cb.checked;
+        saveConfig();
+        toggleSectionLifecycle(key);
+      }
+    });
+
+    openPopover(bar || document.body, wrap);
+    const list = wrap.querySelector(".edit-sec-list");
+    if (list) list.scrollTop = list.scrollHeight;
   }
 
   function publishNow() {
