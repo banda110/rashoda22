@@ -51,7 +51,7 @@ const CONFIG = {
   sections: {
     hero: {
       id: "hero",
-      enabled: true,
+      enabled: false,
       title: "Every Memory Tells A Story",
       subtitle: "A Story Worth Remembering",
       description: "Some moments stay with us forever.",
@@ -62,7 +62,7 @@ const CONFIG = {
     },
     floatingMemories: {
       id: "floating-memories",
-      enabled: true,
+      enabled: false,
       title: "Floating Moments",
       subtitle: "Memories",
       description: "A collection of beautiful memories suspended in time.",
@@ -73,7 +73,7 @@ const CONFIG = {
     },
     marquee: {
       id: "marquee",
-      enabled: true,
+      enabled: false,
       title: "Infinite Memories",
       subtitle: "Gallery",
       description: "Moments that never end.",
@@ -84,7 +84,7 @@ const CONFIG = {
     },
     stackCards: {
       id: "stack-cards",
-      enabled: true,
+      enabled: false,
       title: "Stacked Memories",
       subtitle: "Story",
       description: "Every memory reveals the next chapter.",
@@ -95,7 +95,7 @@ const CONFIG = {
     },
     timeline: {
       id: "timeline",
-      enabled: true,
+      enabled: false,
       title: "Journey Through Memories",
       subtitle: "Timeline",
       description: "Every moment has its place in our story.",
@@ -106,7 +106,7 @@ const CONFIG = {
     },
     memoryExplosion: {
       id: "memory-explosion",
-      enabled: true,
+      enabled: false,
       title: "Memories Everywhere",
       subtitle: "Explosion",
       description: "Every memory comes alive at once.",
@@ -117,7 +117,7 @@ const CONFIG = {
     },
     flipCards: {
       id: "flip-cards",
-      enabled: true,
+      enabled: false,
       title: "3D Flip Cards",
       subtitle: "Moments",
       description: "Turn the card to reveal the memory.",
@@ -128,7 +128,7 @@ const CONFIG = {
     },
     loveQuotes: {
       id: "love-quotes",
-      enabled: true,
+      enabled: false,
       title: "Love Quotes",
       subtitle: "Words",
       description: "Words from the heart.",
@@ -139,7 +139,7 @@ const CONFIG = {
     },
     statistics: {
       id: "statistics",
-      enabled: true,
+      enabled: false,
       title: "Our Story In Numbers",
       subtitle: "Numbers",
       description: "Every moment counts.",
@@ -150,7 +150,7 @@ const CONFIG = {
     },
     orbitGallery: {
       id: "orbit-gallery",
-      enabled: true,
+      enabled: false,
       title: "Orbit Gallery",
       subtitle: "Orbit",
       description: "Memories orbiting around us.",
@@ -161,7 +161,7 @@ const CONFIG = {
     },
     horizontalStory: {
       id: "horizontal-story",
-      enabled: true,
+      enabled: false,
       title: "A Horizontal Journey",
       subtitle: "Story",
       description: "Scroll sideways through our story.",
@@ -172,7 +172,7 @@ const CONFIG = {
     },
     parallaxLayers: {
       id: "parallax-layers",
-      enabled: true,
+      enabled: false,
       title: "Parallax Layers",
       subtitle: "Depth",
       description: "Memories with depth.",
@@ -183,7 +183,7 @@ const CONFIG = {
     },
     photoWall: {
       id: "photo-wall",
-      enabled: true,
+      enabled: false,
       title: "Infinite Photo Wall",
       subtitle: "Wall",
       description: "Every memory on display.",
@@ -194,7 +194,7 @@ const CONFIG = {
     },
     cinematicReveal: {
       id: "cinematic-reveal",
-      enabled: true,
+      enabled: false,
       title: "Cinematic Reveal",
       subtitle: "Reveal",
       description: "A dramatic reveal of our favorite moments.",
@@ -205,7 +205,7 @@ const CONFIG = {
     },
     beforeAfter: {
       id: "before-after",
-      enabled: true,
+      enabled: false,
       title: "Before & After",
       subtitle: "Then & Now",
       description: "How our journey has transformed us.",
@@ -216,7 +216,7 @@ const CONFIG = {
     },
     floatingPolaroids: {
       id: "floating-polaroids",
-      enabled: true,
+      enabled: false,
       title: "Floating Polaroids",
       subtitle: "Polaroids",
       description: "Polaroid memories floating freely.",
@@ -227,7 +227,7 @@ const CONFIG = {
     },
     carousel: {
       id: "carousel",
-      enabled: true,
+      enabled: false,
       title: "Memory Carousel",
       subtitle: "Carousel",
       description: "Drag through the memories.",
@@ -238,7 +238,7 @@ const CONFIG = {
     },
     spotlight: {
       id: "spotlight",
-      enabled: true,
+      enabled: false,
       title: "Spotlight Gallery",
       subtitle: "Spotlight",
       description: "Move your cursor to reveal the light.",
@@ -249,7 +249,7 @@ const CONFIG = {
     },
     bentoGrid: {
       id: "bento-grid",
-      enabled: true,
+      enabled: false,
       title: "Bento Grid",
       subtitle: "Bento",
       description: "Beautifully arranged memories.",
@@ -260,7 +260,7 @@ const CONFIG = {
     },
     splitStory: {
       id: "split-story",
-      enabled: true,
+      enabled: false,
       title: "Split Story",
       subtitle: "Narrative",
       description: "Two perspectives, one story.",
@@ -271,7 +271,7 @@ const CONFIG = {
     },
     stickyChapters: {
       id: "sticky-chapters",
-      enabled: true,
+      enabled: false,
       title: "Sticky Chapters",
       subtitle: "Chapters",
       description: "A scroll-driven narrative.",
@@ -282,7 +282,7 @@ const CONFIG = {
     },
     verticalMarquee: {
       id: "vertical-marquee",
-      enabled: true,
+      enabled: false,
       title: "Vertical Flow",
       subtitle: "Flow",
       description: "Memories flowing endlessly.",
@@ -293,7 +293,7 @@ const CONFIG = {
     },
     loveNotes: {
       id: "love-notes",
-      enabled: true,
+      enabled: false,
       title: "Floating Love Notes",
       subtitle: "Notes",
       description: "Little messages of love floating by.",
@@ -304,7 +304,7 @@ const CONFIG = {
     },
     heartbeat: {
       id: "heartbeat",
-      enabled: true,
+      enabled: false,
       title: "Heartbeat Showcase",
       subtitle: "Heartbeat",
       description: "The rhythm of our love.",
@@ -315,7 +315,7 @@ const CONFIG = {
     },
     finalEnding: {
       id: "final-ending",
-      enabled: true,
+      enabled: false,
       title: "Final Cinematic Ending",
       subtitle: "Ending",
       description: "A grand finale to our story.",
