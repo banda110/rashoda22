@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const ADMIN_VERSION = "3";
+  const ADMIN_VERSION = "4";
 
   const LS_SITES = "admin_sites";
   const LS_SETTINGS = "admin_settings";
@@ -1076,6 +1076,16 @@
   }
 
   function init() {
+    const stale = window.__ADMIN_HTML_VERSION && window.__ADMIN_HTML_VERSION !== ADMIN_VERSION;
+    if (stale) {
+      document.body.insertAdjacentHTML(
+        "afterbegin",
+        '<div style="position:fixed;inset:0;z-index:99999;background:#111;color:#ff5252;display:flex;align-items:center;justify-content:center;font:600 18px/1.6 system-ui;text-align:center;padding:30px;direction:rtl">' +
+          "النسخة قديمة (HTML " + window.__ADMIN_HTML_VERSION + " / JS " + ADMIN_VERSION + ")." +
+          "<br>اعمل Ctrl+F5 (أو اقفل التبويب وافتح الملف من جديد).</div>"
+      );
+      return;
+    }
     const sub = document.querySelector(".brand-sub");
     if (sub) sub.textContent = "لوحة الإدارة — v" + ADMIN_VERSION;
     bindEvents();
