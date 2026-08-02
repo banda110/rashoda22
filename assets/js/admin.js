@@ -6,6 +6,8 @@
 (function () {
   "use strict";
 
+  const ADMIN_VERSION = "3";
+
   const LS_SITES = "admin_sites";
   const LS_SETTINGS = "admin_settings";
   const LS_AUTH = "admin_auth";
@@ -172,14 +174,29 @@
 
   /* ---------- GitHub API ---------- */
 
+  async function jfetch(url, opts, label) {
+    try {
+      return await fetch(url, opts);
+    } catch (e) {
+      throw new Error(
+        "فشل الاتصال بـ " +
+          label +
+          " (" +
+          String(url).replace(/^https:\/\/[^/]+/, "").slice(0, 80) +
+          ") — " +
+          e.message
+      );
+    }
+  }
+
   async function gh(token, path, opts) {
     const headers = { Authorization: "token " + token };
     if (opts && opts.body) headers["Content-Type"] = "application/json";
-    const res = await fetch("https://api.github.com" + path, {
+    const res = await jfetch("https://api.github.com" + path, {
       method: (opts && opts.method) || "GET",
       headers: headers,
       body: opts && opts.body ? JSON.stringify(opts.body) : undefined,
-    });
+    }, "GitHub API");
     return res;
   }
 
@@ -294,7 +311,7 @@
     const auth = { Authorization: "Bearer " + settings.vercelToken };
     const team = vq(settings, {});
     const repoId = await ghRepoId(settings.githubToken, owner, repoName);
-    const dep = await fetch("https://api.vercel.com/v13/deployments" + team, {
+    const dep = await jfetch("https://api.vercel.com/v13/deployments" + team, {
       method: "POST",
       headers: Object.assign({}, auth, { "Content-Type": "application/json" }),
       body: JSON.stringify({
@@ -308,7 +325,7 @@
           outputDirectory: "",
         },
       }),
-    });
+    }, "Vercel API");
     if (!dep.ok) {
       const j = await dep.json().catch(function () {
         return {};
@@ -854,9 +871,10 @@
     const auth = { Authorization: "Bearer " + settings.vercelToken };
     let projectId = s.vercelProjectId;
     if (!projectId) {
-      const pr = await fetch(
+      const pr = await jfetch(
         "https://api.vercel.com/v9/projects/" + encodeURIComponent(s.repo) + vq(settings, {}),
-        { headers: auth }
+        { headers: auth },
+        "Vercel API"
       );
       if (pr.ok) {
         const pj = await pr.json();
@@ -867,10 +885,10 @@
       throw new Error("مش لاقي مشروع Vercel باسم " + s.repo + " — افتح التعديل وحدّد Project ID");
     }
     s.vercelProjectId = projectId;
-    const depRes = await fetch(
-      "https://api.vercel.com/v6/deployments" +
-        vq(settings, { projectId: projectId, limit: 1 }),
-      { headers: auth }
+    const depRes = await jfetch(
+      "https://api.vercel.com/v6/deployments" + vq(settings, { projectId: projectId, limit: 1 }),
+      { headers: auth },
+      "Vercel API"
     );
     if (!depRes.ok) throw new Error("قراءة النشرات فشلت: " + depRes.status);
     const depJ = await depRes.json();
@@ -888,7 +906,7 @@
     if (!settings.vercelToken) throw new Error("حط Vercel Token في الإعدادات الأول");
     if (!s.vercelProjectId) await runVercel(s);
     if (!s.vercelProjectId) throw new Error("محددش Vercel Project ID للموقع");
-    const res = await fetch(
+    const res = await jfetch(
       "https://api.vercel.com/v1/edge-cache/invalidate-by-tags" +
         vq(settings, { projectIdOrName: s.vercelProjectId }),
       {
@@ -898,7 +916,8 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ tags: ["*"] }),
-      }
+      },
+      "Vercel API"
     );
     if (!res.ok) throw new Error("تنظيف الكاش فشل: " + res.status);
     return true;
@@ -1057,6 +1076,8 @@
   }
 
   function init() {
+    const sub = document.querySelector(".brand-sub");
+    if (sub) sub.textContent = "لوحة الإدارة — v" + ADMIN_VERSION;
     bindEvents();
     if (isAuthed()) {
       $("loginGate").classList.add("hidden");
