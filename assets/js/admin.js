@@ -22,6 +22,10 @@
     "assets/js/animations.js",
     "assets/js/main.js",
     "assets/js/editor.js",
+    "admin.html",
+    "assets/css/admin.css",
+    "assets/js/admin-templates.js",
+    "assets/js/admin.js",
   ];
 
   /* ---------- State ---------- */
