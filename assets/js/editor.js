@@ -34,7 +34,7 @@
       "edit.publishFail": "Publish failed. Go to GitHub tab and check the token.",
       "edit.none": "No photos yet. Add some in Media Library or use a link.",
       "edit.noDash": "Open settings in the dashboard.",
-      "edit.hintNotActive": "To edit, first tap the pencil button at the bottom.",
+      "edit.hintNotActive": "To edit, open the dashboard and press the edit button.",
     },
     ar: {
       "edit.enter": "عدّل الموقع",
@@ -59,7 +59,7 @@
       "edit.publishFail": "فشل النشر. افحص الرمز في تبويب جيت هاب.",
       "edit.none": "مفيش صور بعد. ضيف صور في مكتبة الوسائط أو استخدم رابط.",
       "edit.noDash": "افتح الإعدادات من لوحة التحكم.",
-      "edit.hintNotActive": "للتعديل اضغط أولاً على زر القلم ✏️ أسفل الشاشة.",
+      "edit.hintNotActive": "للتعديل افتح لوحة التحكم وادوس زر التعديل على الصفحة.",
     },
   };
 
@@ -640,52 +640,19 @@
   }
 
   /* --------------------------------------------------------
-     Top bar + floating pencil
+     Entry: called from the dashboard ("Edit on page" button).
+     Closes the dashboard and enters edit mode on the page.
      -------------------------------------------------------- */
-  let pencil = null;
   let bar = null;
 
-  function buildPencil() {
-    if (document.getElementById("editModeBtn")) return;
-    pencil = makeEl(`<button id="editModeBtn" title="${L("edit.enter")}">&#9998;</button>`);
-    pencil.addEventListener("click", () => {
-      if (active) exitEditMode();
-      else askPassword();
-    });
-    document.body.appendChild(pencil);
-  }
-
-  function askPassword() {
-    const gate = makeEl(`
-      <div class="edit-gate">
-        <div class="edit-gate-card">
-          <h3>${L("edit.passTitle")}</h3>
-          <input type="password" id="editGatePass" autocomplete="off">
-          <button class="edit-popover-btn primary" data-act="go">${L("edit.passBtn")}</button>
-          <div class="edit-gate-err"></div>
-        </div>
-      </div>`);
-    const input = gate.querySelector("#editGatePass");
-    const err = gate.querySelector(".edit-gate-err");
-
-    function tryEnter() {
-      if (input.value.trim() === (CONFIG.dashboardPassword || "")) {
-        gate.remove();
-        localStorage.setItem(AUTH_KEY, "true");
-        localStorage.setItem("dashboard_auth", "true");
-        enterEditMode();
-      } else {
-        err.textContent = L("edit.wrong");
-        input.style.borderColor = "#ff4d6d";
-        setTimeout(() => (input.style.borderColor = ""), 900);
-      }
-    }
-
-    gate.querySelector('[data-act="go"]').addEventListener("click", tryEnter);
-    input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryEnter(); });
-    document.body.appendChild(gate);
-    input.focus();
-  }
+  window.openEditFromDashboard = function () {
+    document.querySelector(".dash-overlay")?.remove();
+    document.body.classList.remove("dash-open");
+    localStorage.setItem(AUTH_KEY, "true");
+    sessionStorage.setItem(AUTH_KEY, "true");
+    localStorage.setItem("dashboard_auth", "true");
+    enterEditMode();
+  };
 
   function enterEditMode() {
     active = true;
@@ -747,8 +714,6 @@
      Init
      -------------------------------------------------------- */
   document.addEventListener("DOMContentLoaded", () => {
-    buildPencil();
-
     /* intercept clicks / dblclicks while editing */
     document.addEventListener("click", handleEditClick, true);
     document.addEventListener("mousedown", handleEditMousedown, true);
