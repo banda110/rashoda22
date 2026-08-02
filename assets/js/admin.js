@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const ADMIN_VERSION = "4";
+  const ADMIN_VERSION = "5";
 
   const LS_SITES = "admin_sites";
   const LS_SETTINGS = "admin_settings";
