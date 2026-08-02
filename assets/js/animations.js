@@ -8,33 +8,69 @@ function speedify(dur) {
   return dur * s * m;
 }
 
-function initAllAnimations() {
-  heroAnimations();
-  floatingAnimations();
-  marqueeAnimations();
-  stackAnimations();
-  timelineAnimations();
-  explosionAnimations();
-  flipAnimations();
-  quotesAnimations();
-  statisticsAnimations();
-  orbitAnimations();
-  horizontalAnimations();
-  parallaxAnimations();
-  wallAnimations();
-  cinematicAnimations();
-  polaroidAnimations();
-  carouselAnimations();
-  spotlightAnimations();
-  bentoAnimations();
-  splitAnimations();
-  chapterAnimations();
-  vmarqueeAnimations();
-  notesAnimations();
-  heartbeatAnimations();
-  initBeforeAfter();
-  endingAnimations();
+/* ------------------------------------------------------------
+   Section-aware, idempotent animation init.
+   - Animations only run for ENABLED sections.
+   - Each section initializes ONCE (no duplicated tweens).
+   - window.reinitSection(key) re-runs one section (used when an
+     owner toggles a section on/off from the page).
+   ------------------------------------------------------------ */
+const SECTION_INIT = {
+  hero: heroAnimations,
+  floatingMemories: floatingAnimations,
+  marquee: marqueeAnimations,
+  stackCards: stackAnimations,
+  timeline: timelineAnimations,
+  memoryExplosion: explosionAnimations,
+  flipCards: flipAnimations,
+  loveQuotes: quotesAnimations,
+  statistics: statisticsAnimations,
+  orbitGallery: orbitAnimations,
+  horizontalStory: horizontalAnimations,
+  parallaxLayers: parallaxAnimations,
+  photoWall: wallAnimations,
+  cinematicReveal: cinematicAnimations,
+  beforeAfter: initBeforeAfter,
+  floatingPolaroids: polaroidAnimations,
+  carousel: carouselAnimations,
+  spotlight: spotlightAnimations,
+  bentoGrid: bentoAnimations,
+  splitStory: splitAnimations,
+  stickyChapters: chapterAnimations,
+  verticalMarquee: vmarqueeAnimations,
+  loveNotes: notesAnimations,
+  heartbeat: heartbeatAnimations,
+  finalEnding: endingAnimations,
+};
+
+const INIT_SET = new Set();
+
+function sectionEnabled(key) {
+  const s = CONFIG.sections[key];
+  return !s || s.enabled !== false;
 }
+
+function initSection(key) {
+  const fn = SECTION_INIT[key];
+  if (!fn) return;
+  if (INIT_SET.has(key)) return;
+  if (!sectionEnabled(key)) return;
+  INIT_SET.add(key);
+  try {
+    fn();
+  } catch (e) {
+    console.warn("[anim] section failed:", key, e);
+  }
+}
+
+function initAllAnimations() {
+  Object.keys(SECTION_INIT).forEach(initSection);
+}
+
+window.reinitSection = function (key) {
+  INIT_SET.delete(key);
+  initSection(key);
+};
 
 /* ==================== HERO ==================== */
 function heroAnimations() {
@@ -106,7 +142,7 @@ function floatingAnimations() {
       scale: 0, opacity: 0, duration: speedify(1),
       scrollTrigger: {
         trigger: "#floating-memories", start: "top 85%",
-        toggleActions: "play none none reverse"
+        once: true
       }
     });
   });
@@ -167,7 +203,7 @@ function timelineAnimations() {
       duration: speedify(1.2),
       scrollTrigger: {
         trigger: item, start: "top 85%",
-        end: "top 30%", toggleActions: "play none none reverse"
+        end: "top 30%", once: true
       }
     });
   });
@@ -216,7 +252,7 @@ function flipAnimations() {
       duration: speedify(0.8),
       scrollTrigger: {
         trigger: card, start: "top 85%",
-        toggleActions: "play none none reverse"
+        once: true
       }
     });
 
@@ -263,7 +299,7 @@ function quotesAnimations() {
       opacity: 0, y: 60, duration: speedify(1),
       scrollTrigger: {
         trigger: "#love-quotes", start: "top 80%",
-        toggleActions: "play none none reverse"
+        once: true
       }
     });
   });
@@ -302,7 +338,7 @@ function statisticsAnimations() {
     duration: speedify(0.8),
     scrollTrigger: {
       trigger: "#statistics", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -327,7 +363,7 @@ function orbitAnimations() {
     duration: speedify(1.5),
     scrollTrigger: {
       trigger: "#orbit-gallery", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -358,7 +394,7 @@ function horizontalAnimations() {
       scrollTrigger: {
         trigger: panel, start: "left 80%",
         containerAnimation: hST,
-        toggleActions: "play none none reverse"
+        once: true
       }
     });
   });
@@ -391,7 +427,7 @@ function wallAnimations() {
       duration: speedify(0.6),
       scrollTrigger: {
         trigger: item, start: "top 90%",
-        toggleActions: "play none none reverse"
+        once: true
       },
       delay: i * 0.05
     });
@@ -421,23 +457,18 @@ function cinematicAnimations() {
     opacity: 0, y: 60, duration: speedify(1),
     scrollTrigger: {
       trigger: "#cinematic-reveal", start: "top 70%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
 
 /* ==================== BEFORE AFTER ==================== */
-let baInitialized = false;
-
 function initBeforeAfter() {
-  if (baInitialized) return;
-  baInitialized = true;
-
   gsap.from(".ba-container", {
     opacity: 0, y: 80, duration: speedify(1),
     scrollTrigger: {
       trigger: "#before-after", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -459,7 +490,7 @@ function polaroidAnimations() {
       duration: speedify(0.8),
       scrollTrigger: {
         trigger: "#floating-polaroids", start: "top 85%",
-        toggleActions: "play none none reverse"
+        once: true
       }
     });
   });
@@ -490,7 +521,7 @@ function carouselAnimations() {
     duration: speedify(0.6),
     scrollTrigger: {
       trigger: "#carousel", start: "top 85%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -503,7 +534,7 @@ function spotlightAnimations() {
       duration: speedify(0.6),
       scrollTrigger: {
         trigger: item, start: "top 85%",
-        toggleActions: "play none none reverse"
+        once: true
       },
       delay: i * 0.08
     });
@@ -518,7 +549,7 @@ function bentoAnimations() {
       duration: speedify(0.7),
       scrollTrigger: {
         trigger: item, start: "top 85%",
-        toggleActions: "play none none reverse"
+        once: true
       },
       delay: i * 0.1
     });
@@ -532,7 +563,7 @@ function splitAnimations() {
     duration: speedify(1),
     scrollTrigger: {
       trigger: "#split-story", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 
@@ -540,7 +571,7 @@ function splitAnimations() {
     opacity: 0, x: 100, duration: speedify(1),
     scrollTrigger: {
       trigger: "#split-story", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -600,7 +631,7 @@ function vmarqueeAnimations() {
     opacity: 0, duration: speedify(0.8),
     scrollTrigger: {
       trigger: "#vertical-marquee", start: "top 85%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
@@ -620,7 +651,7 @@ function notesAnimations() {
       duration: speedify(0.6),
       scrollTrigger: {
         trigger: "#love-notes", start: "top 80%",
-        toggleActions: "play none none reverse"
+        once: true
       },
       delay: i * 0.15
     });
@@ -633,7 +664,7 @@ function heartbeatAnimations() {
     opacity: 0, y: 80, duration: speedify(1),
     scrollTrigger: {
       trigger: "#heartbeat", start: "top 80%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 
@@ -642,7 +673,7 @@ function heartbeatAnimations() {
       opacity: 0, y: 40, duration: speedify(0.6),
       scrollTrigger: {
         trigger: "#heartbeat", start: "top 70%",
-        toggleActions: "play none none reverse"
+        once: true
       },
       delay: 0.2 + i * 0.15
     });
@@ -656,7 +687,7 @@ function endingAnimations() {
       trigger: "#final-ending",
       start: "top 80%",
       end: "bottom 20%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 
@@ -693,7 +724,7 @@ function addStaggerReveal(selector, trigger, staggerVal) {
     scrollTrigger: {
       trigger: trigger,
       start: "top 85%",
-      toggleActions: "play none none reverse"
+      once: true
     }
   });
 }
