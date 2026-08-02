@@ -93,7 +93,8 @@
     "sec_heartbeat_title": " كل سنه وانتي طيبه ",
     "sec_finalEnding_title": "بحبك ",
     "sec_finalEnding_subtitle": "بحبك ",
-    "sec_finalEnding_desc": "بحبك "
+    "sec_finalEnding_desc": "بحبك ",
+    "sec_floatingMemories_desc": "بحبك"
   },
   "sections": {
     "hero": {
@@ -362,7 +363,7 @@
     },
     "finalEnding": {
       "id": "final-ending",
-      "enabled": true,
+      "enabled": false,
       "title": "بحبك ",
       "subtitle": "بحبك ",
       "description": "بحبك ",
