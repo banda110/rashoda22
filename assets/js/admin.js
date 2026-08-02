@@ -283,43 +283,23 @@
     );
   }
 
-  async function sha1Hex(str) {
-    const data = new TextEncoder().encode(str);
-    const buf = await crypto.subtle.digest("SHA-1", data);
-    return Array.from(new Uint8Array(buf))
-      .map(function (b) {
-        return b.toString(16).padStart(2, "0");
-      })
-      .join("");
+  async function ghRepoId(token, owner, repo) {
+    const res = await gh(token, "/repos/" + owner + "/" + repo);
+    if (!res.ok) throw new Error("قراءة معلومات الريبو فشلت: " + res.status);
+    const j = await res.json();
+    return j.id;
   }
 
-  async function deployToVercel(projectName, filesList, settings) {
+  async function deployToVercel(owner, repoName, settings) {
     const auth = { Authorization: "Bearer " + settings.vercelToken };
     const team = vq(settings, {});
-    const uploads = [];
-    const entries = [];
-    for (const f of filesList) {
-      const digest = await sha1Hex(f.content);
-      entries.push({ file: f.path, sha: digest });
-      uploads.push(
-        fetch("https://api.vercel.com/v2/files" + team, {
-          method: "POST",
-          headers: Object.assign({}, auth, {
-            "x-now-digest": digest,
-            "x-vercel-digest": digest,
-            "Content-Type": "application/octet-stream",
-          }),
-          body: f.content,
-        })
-      );
-    }
-    await Promise.all(uploads);
+    const repoId = await ghRepoId(settings.githubToken, owner, repoName);
     const dep = await fetch("https://api.vercel.com/v13/deployments" + team, {
       method: "POST",
       headers: Object.assign({}, auth, { "Content-Type": "application/json" }),
       body: JSON.stringify({
-        name: projectName,
-        files: entries,
+        name: repoName,
+        gitSource: { type: "github", repoId: repoId, ref: "main" },
         target: "production",
         projectSettings: {
           framework: null,
@@ -340,39 +320,10 @@
     return dep.json();
   }
 
-  function buildDeployFiles(site, settings) {
-    const tpl = ADMIN_TEMPLATES.getTemplate(site.template);
-    const files = [];
-    return (async function () {
-      for (const p of ENGINE_FILES) {
-        const text = await fetchEngineFile(settings.templateRepo, p);
-        files.push({
-          path: p,
-          content:
-            p === "assets/js/config.js"
-              ? patchConfigJs(text, site.owner + "/" + site.repo, site.dashPassword || "love")
-              : text,
-        });
-      }
-      if (tpl) {
-        const config = buildClientConfig(
-          tpl,
-          site.owner,
-          site.repo,
-          site.sitePassword,
-          site.dashPassword || "love"
-        );
-        files.push({ path: "config.json", content: JSON.stringify(config, null, 2) });
-      }
-      return files;
-    })();
-  }
-
   async function redeploySite(site) {
     const settings = getSettings();
     if (!settings.vercelToken) throw new Error("حط Vercel Token في الإعدادات الأول");
-    const files = await buildDeployFiles(site, settings);
-    await deployToVercel(site.repo, files, settings);
+    await deployToVercel(site.owner, site.repo, settings);
     site.liveUrl = "https://" + site.repo + ".vercel.app";
     site.vercelDeployed = true;
     site.vercel = { lastDeploy: Date.now() };
@@ -520,7 +471,6 @@
       logCreate("تم إنشاء الريبو ✓", "ok");
 
       const ownerRepo = owner + "/" + repoName;
-      const deployFiles = [];
 
       for (const path of ENGINE_FILES) {
         const text = await fetchEngineFile(settings.templateRepo, path);
@@ -530,7 +480,6 @@
             : text;
         await pushFile(settings.githubToken, owner, repoName, path, finalText, "Init " + path);
         logCreate("رفع " + path + " ✓", "ok");
-        deployFiles.push({ path: path, content: finalText });
       }
 
       const config = buildClientConfig(tpl, owner, repoName, sitePass, dashPass);
@@ -544,7 +493,6 @@
         "Add site config"
       );
       logCreate("رفع config.json ✓", "ok");
-      deployFiles.push({ path: "config.json", content: configJson });
 
       const liveUrl = "https://" + repoName + ".vercel.app";
       await pushFile(
@@ -560,7 +508,7 @@
       let vercelDeployed = false;
       if (settings.vercelToken) {
         try {
-          await deployToVercel(repoName, deployFiles, settings);
+          await deployToVercel(owner, repoName, settings);
           vercelDeployed = true;
           logCreate("تم النشر على Vercel مباشرة ✓ — " + liveUrl, "ok");
         } catch (err) {
@@ -775,8 +723,7 @@
         }
       }
       if (settings.vercelToken) {
-        const files = await buildDeployFiles(s, settings);
-        await deployToVercel(s.repo, files, settings);
+        await deployToVercel(s.owner, s.repo, settings);
         s.liveUrl = "https://" + s.repo + ".vercel.app";
         s.vercelDeployed = true;
         s.vercel = { lastDeploy: Date.now() };
