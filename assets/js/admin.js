@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const ADMIN_VERSION = "6";
+  const ADMIN_VERSION = "7";
 
   const LS_SITES = "admin_sites";
   const LS_SETTINGS = "admin_settings";
@@ -46,7 +46,7 @@
     return {
       adminPassword: "admin123",
       githubToken: "",
-      templateRepo: "banda110/rashoda22",
+      templateRepo: "banda110/Saas-all",
       dataRepo: "banda110/rashoda22-data",
       vercelToken: "",
       vercelTeam: "",
@@ -376,6 +376,17 @@
   }
 
   async function fetchEngineFile(templateRepo, path) {
+    const settings = getSettings();
+    if (settings.githubToken) {
+      const res = await gh(settings.githubToken, "/repos/" + templateRepo + "/contents/" + path);
+      if (res.ok) {
+        const j = await res.json().catch(function () {
+          return null;
+        });
+        if (j && j.content) return decodeURIComponent(escape(atob(j.content)));
+      }
+      throw new Error("ملف المحرك مفقود: " + path + " (" + res.status + ")");
+    }
     const url = "https://raw.githubusercontent.com/" + templateRepo + "/HEAD/" + path;
     const res = await fetch(url);
     if (!res.ok) throw new Error("ملف المحرك مفقود: " + path + " (" + res.status + ")");
