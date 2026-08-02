@@ -21,6 +21,23 @@ document.addEventListener("DOMContentLoaded", () => {
       ScrollTrigger.refresh();
     }
   }, 150);
+
+  /* Recalculate ScrollTrigger once images/fonts finish loading so
+     reveal positions are correct and nothing stays invisible. */
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("load", () => {
+      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh(true);
+    });
+  }
+  if (document.fonts && typeof document.fonts.ready === "object") {
+    document.fonts.ready.then(() => {
+      if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+    }).catch(() => {});
+  }
+  /* Safety net: a second refresh shortly after load. */
+  setTimeout(() => {
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh(true);
+  }, 800);
 });
 
 function applyTheme() {
