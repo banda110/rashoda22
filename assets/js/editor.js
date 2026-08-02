@@ -34,6 +34,7 @@
       "edit.publishFail": "Publish failed. Go to GitHub tab and check the token.",
       "edit.none": "No photos yet. Add some in Media Library or use a link.",
       "edit.noDash": "Open settings in the dashboard.",
+      "edit.hintNotActive": "To edit, first tap the pencil button at the bottom.",
     },
     ar: {
       "edit.enter": "عدّل الموقع",
@@ -58,6 +59,7 @@
       "edit.publishFail": "فشل النشر. افحص الرمز في تبويب جيت هاب.",
       "edit.none": "مفيش صور بعد. ضيف صور في مكتبة الوسائط أو استخدم رابط.",
       "edit.noDash": "افتح الإعدادات من لوحة التحكم.",
+      "edit.hintNotActive": "للتعديل اضغط أولاً على زر القلم ✏️ أسفل الشاشة.",
     },
   };
 
@@ -374,7 +376,8 @@
   function makeEl(html) {
     const d = document.createElement("div");
     d.innerHTML = html.trim();
-    return d.firstChild;
+    if (d.childElementCount > 1) return d;
+    return d.firstElementChild || d.firstChild;
   }
 
   let popover = null;
@@ -537,30 +540,60 @@
      -------------------------------------------------------- */
   function handleEditClick(e) {
     if (!active) return;
+    try {
+      const tgt = e.target;
+      if (tgt.closest && tgt.closest(".edit-sec-tool")) return;
+      if (tgt.closest && tgt.closest(".edit-popover")) return;
+      if (tgt.closest && tgt.closest("#editModeBar")) return;
+
+      const img = tgt.closest ? tgt.closest("img[data-ph]") : null;
+      if (img) {
+        e.preventDefault();
+        e.stopPropagation();
+        const section = img.closest("section[data-section]");
+        const domId = section ? section.dataset.section : "";
+        const idx = section
+          ? Array.prototype.indexOf.call(section.querySelectorAll("img[data-ph]"), img)
+          : 0;
+        openImageEditor(img, getCustomImgKey(domId, idx));
+        return;
+      }
+
+      const key = keyFor(tgt);
+      if (key) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTextEditor(tgt, key);
+      }
+    } catch (err) {
+      console.error("[editor]", err);
+    }
+  }
+
+  /* Prevent native text selection while clicking editable text */
+  function handleEditMousedown(e) {
+    if (!active) return;
     const tgt = e.target;
-    if (tgt.closest && tgt.closest(".edit-sec-tool")) return;
-    if (tgt.closest && tgt.closest(".edit-popover")) return;
-    if (tgt.closest && tgt.closest("#editModeBar")) return;
+    if (!tgt || !tgt.closest) return;
+    if (tgt.closest(".edit-popover, .edit-gate, .edit-sec-tool, #editModeBar, img[data-ph], a, button, input, textarea, select")) return;
+    if (keyFor(tgt)) e.preventDefault();
+  }
 
-    const img = tgt.closest ? tgt.closest("img[data-ph]") : null;
-    if (img) {
-      e.preventDefault();
-      e.stopPropagation();
-      const section = img.closest("section[data-section]");
-      const domId = section ? section.dataset.section : "";
-      const idx = section
-        ? Array.prototype.indexOf.call(section.querySelectorAll("img[data-ph]"), img)
-        : 0;
-      openImageEditor(img, getCustomImgKey(domId, idx));
-      return;
-    }
-
-    const key = keyFor(tgt);
-    if (key) {
-      e.preventDefault();
-      e.stopPropagation();
-      openTextEditor(tgt, key);
-    }
+  /* When NOT in edit mode, guide the owner to the pencil button */
+  let lastHint = 0;
+  function hintEdit() {
+    const now = Date.now();
+    if (now - lastHint < 5000) return;
+    lastHint = now;
+    toast(L("edit.hintNotActive"), false);
+  }
+  function handleNormalClick(e) {
+    if (active) return;
+    const tgt = e.target;
+    if (!tgt || !tgt.closest) return;
+    if (tgt.closest("#editModeBtn, .dash-overlay, .edit-popover, .edit-gate")) return;
+    if (tgt.closest("img[data-ph]")) { hintEdit(); return; }
+    if (keyFor(tgt)) hintEdit();
   }
 
   /* --------------------------------------------------------
@@ -718,12 +751,8 @@
 
     /* intercept clicks / dblclicks while editing */
     document.addEventListener("click", handleEditClick, true);
-    document.addEventListener("dblclick", (e) => {
-      if (active) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
+    document.addEventListener("mousedown", handleEditMousedown, true);
+    document.addEventListener("click", handleNormalClick, true);
     document.addEventListener("keydown", (e) => {
       if (active && e.key === "Escape") {
         closePopover();
