@@ -125,6 +125,7 @@ function dashboardHTML() {
           </div>
         </nav>
         <div class="dash-sidebar-footer">
+          <a class="dash-logout-btn" id="dashAdminLink" href="admin.html" style="text-decoration:none;text-align:center;">&#128736; ${t("dash.adminPanel")}</a>
           <button class="dash-logout-btn" id="dashLogout">${t("dash.logout")}</button>
         </div>
       </div>
