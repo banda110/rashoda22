@@ -1357,9 +1357,18 @@ html[dir="rtl"] .sec-switch input:checked + .sec-switch-track::after { transform
   background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
   font-size: 1.3rem; box-shadow: 0 8px 30px rgba(0,0,0,0.45);
   transition: transform 0.2s, box-shadow 0.2s;
+  animation: editPulse 2.6s ease-in-out infinite;
+}
+@keyframes editPulse {
+  0%, 100% { box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 0 rgba(255,77,109,0.55); }
+  50% { box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 14px rgba(255,77,109,0); }
 }
 #editModeBtn:hover { transform: scale(1.1) rotate(-8deg); box-shadow: 0 10px 40px rgba(255,77,109,0.5); }
 body.dash-open #editModeBtn, body.dash-open #editModeBar { display: none; }
+
+/* No accidental text selection while editing */
+body.edit-mode { user-select: none; -webkit-user-select: none; }
+.edit-popover, .edit-gate, .edit-popover *, .edit-gate * { user-select: text; -webkit-user-select: text; }
 
 /* --- Edit mode outlines --- */
 .edit-mode .hero-tag, .edit-mode .hero-title, .edit-mode .hero-desc, .edit-mode .hero-btn,
