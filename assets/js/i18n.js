@@ -214,6 +214,15 @@ const translations = {
     "dash.theme.text": "Text",
     "dash.theme.blur": "Blur Amount",
     "dash.theme.radius": "Border Radius",
+    "dash.theme.presets": "Quick color themes",
+    "dash.theme.fontSize": "Text size",
+    "dash.theme.customCSS": "Custom CSS (advanced)",
+
+    "dash.general.helpTitle": "How to use",
+    "dash.general.help1": "Upload your photos in the Media Library (photos go online automatically).",
+    "dash.general.help2": "Edit texts here, or click the pencil button on the site to edit directly on the page.",
+    "dash.general.help3": "Press 'Publish' so every visitor sees your changes.",
+    "dash.general.quickToggle": "Show / hide sections",
 
     "dash.anim.speed": "Global Speed",
     "dash.anim.multiplier": "Speed Multiplier",
@@ -659,6 +668,15 @@ const translations = {
     "dash.theme.text": "النص",
     "dash.theme.blur": "مقدار التمويه",
     "dash.theme.radius": "نصف قطر الحدود",
+    "dash.theme.presets": "ألوان جاهزة",
+    "dash.theme.fontSize": "حجم الخط",
+    "dash.theme.customCSS": "CSS مخصص (متقدم)",
+
+    "dash.general.helpTitle": "طريقة الاستخدام",
+    "dash.general.help1": "ارفع صورك من مكتبة الوسائط (الصور بتترفع اونلاين تلقائياً).",
+    "dash.general.help2": "عدّل النصوص من هنا، أو اضغط على زر القلم في الموقع للتعديل مباشرة.",
+    "dash.general.help3": "اضغط 'نشر' عشان كل زائر يشوف تعديلاتك.",
+    "dash.general.quickToggle": "إظهار / إخفاء الأقسام",
 
     "dash.anim.speed": "السرعة العامة",
     "dash.anim.multiplier": "مضاعف السرعة",
