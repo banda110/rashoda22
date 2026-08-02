@@ -133,6 +133,7 @@ function dashboardHTML() {
           <button class="dash-menu-btn" id="dashMenuToggle">&#x2630;</button>
           <h2 id="dashPanelTitle">${t("dash.general.title")}</h2>
           <div style="display:flex;align-items:center;gap:0.5rem;">
+            <button class="dash-btn primary dash-publish-quick" data-quickpublish title="${t("dash.github.publishHint")}">&#8593; ${t("dash.github.publish")}</button>
             <button class="lang-switch dash-lang-btn" onclick="toggleLang()">${t("lang.switch")}</button>
             <button class="dash-topbar-close" id="dashClose">&times;</button>
           </div>
@@ -260,18 +261,56 @@ function escHtml(str) {
 }
 
 function generalPanel() {
+  const sectionRows = SECTIONS_LIST.map(entry => {
+    const key = getSectionKeyByDomId(entry.id);
+    const s = CONFIG.sections[key];
+    if (!s) return "";
+    return `<div class="sec-switch-row">
+      <span class="sec-switch-name">${t("dash.panel." + entry.tab) || entry.label}</span>
+      <label class="sec-switch">
+        <input type="checkbox" class="sec-toggle" data-section="${key}" ${s.enabled ? "checked" : ""}>
+        <span class="sec-switch-track"></span>
+      </label>
+    </div>`;
+  }).join("");
+
   return `<div class="dash-panel active" data-panel="general">
     <h3>${t("dash.general.title")}</h3>
-    <button class="dash-btn primary" id="exportBtn">${t("dash.general.export")}</button>
+    <div class="dash-help-card">
+      <strong>${t("dash.general.helpTitle")}</strong>
+      <p>1. ${t("dash.general.help1")}</p>
+      <p>2. ${t("dash.general.help2")}</p>
+      <p>3. ${t("dash.general.help3")}</p>
+    </div>
+    <button class="dash-btn primary" data-quickpublish style="width:100%;margin-bottom:0.5rem;">&#8593; ${t("dash.github.publish")}</button>
+    <button class="dash-btn" id="exportBtn">${t("dash.general.export")}</button>
     <button class="dash-btn" id="importBtn">${t("dash.general.import")}</button>
     <input type="file" id="importFile" accept=".json" style="display:none">
     <button class="dash-btn danger" id="resetBtn">${t("dash.general.reset")}</button>
+    <div style="margin:1.2rem 0;border-top:1px solid var(--glass-border);"></div>
+    <label style="font-size:0.85rem;">${t("dash.general.quickToggle")}</label>
+    <div class="sec-switch-list">${sectionRows}</div>
   </div>`;
 }
 
 function themePanel() {
+  const presets = [
+    ["#ff4d6d", "#7c4dff"],
+    ["#ff6b9d", "#ff9671"],
+    ["#00c2ff", "#7c4dff"],
+    ["#22d3ee", "#a78bfa"],
+    ["#f59e0b", "#ef4444"],
+    ["#10b981", "#14b8a6"],
+    ["#f43f5e", "#f97316"],
+    ["#eab308", "#22c55e"]
+  ];
+  const presetBtns = presets.map(p =>
+    `<button class="accent-preset" data-accent="${p[0]}" data-accent2="${p[1]}" style="background:linear-gradient(135deg,${p[0]},${p[1]});" title="${t("dash.theme.presets")}"></button>`
+  ).join("");
   return `<div class="dash-panel" data-panel="theme">
     <h3>${t("dash.theme.title")}</h3>
+    <label>${t("dash.theme.presets")}</label>
+    <div class="accent-preset-row">${presetBtns}</div>
     <label>${t("dash.theme.accent")}</label>
     <input type="color" id="themeAccent" value="${CONFIG.theme.accent}">
     <label>${t("dash.theme.accent2")}</label>
@@ -284,6 +323,11 @@ function themePanel() {
     <input type="range" min="0" max="50" id="themeBlur" value="${CONFIG.theme.blur}">
     <label>${t("dash.theme.radius")}</label>
     <input type="range" min="8" max="50" id="themeRadius" value="${CONFIG.theme.radius}">
+    <label>${t("dash.theme.fontSize")}</label>
+    <input type="range" min="12" max="20" step="0.5" id="themeFontSize" value="${CONFIG.theme.fontSize || 16}">
+    <span id="themeFontSizeVal">${CONFIG.theme.fontSize || 16}px</span>
+    <label>${t("dash.theme.customCSS")}</label>
+    <textarea id="themeCustomCss" rows="6" placeholder="body { }">${escHtml(CONFIG.theme.customCSS || "")}</textarea>
   </div>`;
 }
 
@@ -652,6 +696,7 @@ function bindDashTabs() {
     closeBtn.addEventListener("click", () => {
       const overlay = document.querySelector(".dash-overlay");
       if (overlay) overlay.remove();
+      document.body.classList.remove("dash-open");
     });
   }
 
@@ -674,6 +719,21 @@ function bindDashTabs() {
 function populateDash() {
   renderMediaLibrary();
 }
+
+/* Open the dashboard overlay directly on a section tab (used by edit mode) */
+window.openDashboardSection = function (tab) {
+  const overlay = document.querySelector(".dash-overlay");
+  if (overlay) {
+    document.body.classList.add("dash-open");
+    const btn = document.querySelector(`.dash-nav-item[data-tab="${tab}"]`);
+    if (btn) btn.click();
+    return;
+  }
+  renderDashboard();
+  document.body.classList.add("dash-open");
+  const btn = document.querySelector(`.dash-nav-item[data-tab="${tab}"]`);
+  if (btn) btn.click();
+};
 
 function bindDashEvents() {
   /* General */
@@ -714,6 +774,29 @@ function bindDashEvents() {
     document.documentElement.style.setProperty("--radius-xl", e.target.value + "px");
     saveConfig();
   });
+  document.querySelectorAll(".accent-preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      CONFIG.theme.accent = btn.dataset.accent;
+      CONFIG.theme.accentSecondary = btn.dataset.accent2;
+      if (typeof applyTheme === "function") applyTheme();
+      saveConfig();
+      const a = document.getElementById("themeAccent");
+      const a2 = document.getElementById("themeAccentSecondary");
+      if (a) a.value = CONFIG.theme.accent;
+      if (a2) a2.value = CONFIG.theme.accentSecondary;
+    });
+  });
+  document.getElementById("themeFontSize")?.addEventListener("input", (e) => {
+    CONFIG.theme.fontSize = parseFloat(e.target.value);
+    document.getElementById("themeFontSizeVal").textContent = e.target.value + "px";
+    document.documentElement.style.fontSize = e.target.value + "px";
+    saveConfig();
+  });
+  document.getElementById("themeCustomCss")?.addEventListener("input", (e) => {
+    CONFIG.theme.customCSS = e.target.value;
+    applyCustomCss(e.target.value);
+    saveConfig();
+  });
 
   /* Animations */
   document.getElementById("animSpeed")?.addEventListener("change", (e) => {
@@ -731,6 +814,7 @@ function bindDashEvents() {
     if (typeof applyContentOverrides === "function") applyContentOverrides();
     if (typeof applyTheme === "function") applyTheme();
     if (typeof applyFallbackImages === "function") applyFallbackImages();
+    if (typeof applyCustomText === "function") applyCustomText();
     if (typeof window.refreshSections === "function") window.refreshSections();
   }
 
@@ -774,6 +858,9 @@ function bindDashEvents() {
   });
   document.getElementById("ghUploadBtn")?.addEventListener("click", uploadToGithub);
   document.getElementById("ghPublishBtn")?.addEventListener("click", publishConfigToGithub);
+  document.querySelectorAll("[data-quickpublish]").forEach(btn =>
+    btn.addEventListener("click", publishConfigToGithub)
+  );
 
   /* Media Library */
   document.getElementById("addMediaBtn")?.addEventListener("click", addMediaItem);
@@ -845,19 +932,37 @@ function bindDashEvents() {
   document.querySelectorAll(".sec-title").forEach(inp => {
     inp.addEventListener("input", (e) => {
       const section = CONFIG.sections[e.target.dataset.section];
-      if (section) { section.title = e.target.value; saveConfig(); }
+      if (section) {
+        section.title = e.target.value;
+        if (!CONFIG.customText) CONFIG.customText = {};
+        CONFIG.customText["sec_" + e.target.dataset.section + "_title"] = e.target.value;
+        saveConfig();
+        if (typeof applyCustomText === "function") applyCustomText();
+      }
     });
   });
   document.querySelectorAll(".sec-subtitle").forEach(inp => {
     inp.addEventListener("input", (e) => {
       const section = CONFIG.sections[e.target.dataset.section];
-      if (section) { section.subtitle = e.target.value; saveConfig(); }
+      if (section) {
+        section.subtitle = e.target.value;
+        if (!CONFIG.customText) CONFIG.customText = {};
+        CONFIG.customText["sec_" + e.target.dataset.section + "_subtitle"] = e.target.value;
+        saveConfig();
+        if (typeof applyCustomText === "function") applyCustomText();
+      }
     });
   });
   document.querySelectorAll(".sec-desc").forEach(inp => {
     inp.addEventListener("input", (e) => {
       const section = CONFIG.sections[e.target.dataset.section];
-      if (section) { section.description = e.target.value; saveConfig(); }
+      if (section) {
+        section.description = e.target.value;
+        if (!CONFIG.customText) CONFIG.customText = {};
+        CONFIG.customText["sec_" + e.target.dataset.section + "_desc"] = e.target.value;
+        saveConfig();
+        if (typeof applyCustomText === "function") applyCustomText();
+      }
     });
   });
   document.querySelectorAll(".sec-speed").forEach(inp => {
@@ -1262,10 +1367,10 @@ async function pushImageToGithub(dataUrl, filename) {
 }
 
 async function publishConfigToGithub() {
-  const token = document.getElementById("ghToken")?.value.trim();
-  const repoInput = document.getElementById("ghRepo")?.value.trim();
-  if (!token) { alert(t("dash.github.noToken")); return; }
-  if (!repoInput) { alert(t("dash.github.noRepo")); return; }
+  const token = document.getElementById("ghToken")?.value.trim() || (CONFIG.github && CONFIG.github.token) || "";
+  const repoInput = document.getElementById("ghRepo")?.value.trim() || (CONFIG.github && CONFIG.github.repo) || "";
+  if (!token) { alert(t("dash.github.noToken")); return false; }
+  if (!repoInput) { alert(t("dash.github.noRepo")); return false; }
 
   const parsed = parseGhRepo(repoInput);
   const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
@@ -1344,8 +1449,10 @@ async function publishConfigToGithub() {
     CONFIG.github.repo = owner + "/" + parsed.repo;
     saveConfig();
     alert(t("dash.github.published"));
+    return true;
   } catch (err) {
     alert(t("dash.github.publishErr") + err.message);
+    return false;
   }
 }
 
